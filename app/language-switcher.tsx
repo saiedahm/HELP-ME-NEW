@@ -82,7 +82,7 @@ export default function LanguageSwitcher() {
 
   return (
     <div className="language-switcher language-switcher-modern">
-      <span className="language-icon" aria-hidden="true">文A</span>
+      <span className="language-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18M5.5 6.5h13M5.5 17.5h13"/></svg></span>
       <label className="sr-only" htmlFor="helpme-language-choice">Choose language</label>
       <select id="helpme-language-choice" aria-label="Choose language" value={language} onChange={event => changeLanguage(event.target.value)}>
         {LANGUAGES.map(([code, label]) => <option key={code} value={code}>{label}</option>)}
