@@ -1,0 +1,1 @@
+export default function DashboardLoading(){return <main className="legal-page"><section className="legal-card" aria-live="polite"><p className="landing-eyebrow">WORKSPACE</p><h1>Loading your dashboard…</h1><p>We are preparing your workspace, knowledge and conversation summary.</p><div className="loading-track"><span/></div></section></main>}
