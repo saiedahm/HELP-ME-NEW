@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Brand from "../brand";
 import LanguageSwitcher from "../language-switcher";
@@ -17,6 +17,11 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [sessionStatus, setSessionStatus] = useState<SessionStatus>("checking");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages, loading]);
 
   useEffect(() => {
     let mounted = true;
@@ -91,6 +96,7 @@ export default function ChatPage() {
               <div className={`chat-message ${message.role}`}>{message.content}<time>{new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</time></div>
             </div>)}
             {loading && <div className="chat-message-row assistant"><span className="chat-message-avatar" aria-hidden="true">✦</span><div className="chat-message assistant typing-indicator"><span /><span /><span /><small>Thinking…</small></div></div>}
+            <div ref={messagesEndRef} aria-hidden="true" />
           </div>
           {error && <p className="status-message" role="alert">{error} {error.includes("Sign in") && <Link href="/login">Sign in here</Link>}</p>}
           <form className="chat-input" onSubmit={send}>
