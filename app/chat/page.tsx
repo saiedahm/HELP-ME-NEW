@@ -24,6 +24,12 @@ export default function ChatPage() {
   }, [messages, loading]);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const draft = params.get("draft");
+    if (draft) setInput(draft.slice(0, 4000));
+  }, []);
+
+  useEffect(() => {
     let mounted = true;
     fetch("/api/auth/session", { credentials: "same-origin" })
       .then(async response => {
@@ -97,7 +103,7 @@ export default function ChatPage() {
             <div><span className="eyebrow">HELP-ME · AI SUPPORT</span><h1>How can we help?</h1><p><span className="online-dot" /> Your private assistant conversation</p></div>
           </div>
           {sessionStatus === "checking" && <div className="chat-access-note" role="status">Checking your secure session…</div>}
-          {sessionStatus === "guest" && <div className="chat-access-note" role="status"><strong>Sign in to start your private conversation.</strong><span>Create an account to save chats and use your workspace assistant.</span><div><Link className="button primary" href="/login">Sign in</Link><Link className="button secondary" href="/signup">Create account</Link></div></div>}
+          {sessionStatus === "guest" && <div className="chat-access-note" role="status"><strong>Your message is ready.</strong><span>Create a free account or sign in to send it and save your conversation. No paid subscription is required to start.</span><div><Link className="button primary" href="/login">Sign in</Link><Link className="button secondary" href="/signup">Create account</Link></div></div>}
           <div className="messages" aria-live="polite" aria-label="Conversation messages">
             {messages.map((message, index) => <div className={`chat-message-row ${message.role}`} key={index}>
               {message.role === "assistant" && <span className="chat-message-avatar" aria-hidden="true">✦</span>}
