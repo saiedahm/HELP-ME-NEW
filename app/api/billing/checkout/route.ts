@@ -50,8 +50,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Only a workspace owner or admin can change the plan." }, { status: 403 });
   }
 
-  const configuredBase = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL;
-  const origin = configuredBase ? new URL(configuredBase).origin : new URL(request.url).origin;
+  const configuredBase = process.env.NEXT_PUBLIC_APP_URL || process.env.AUTH_URL || process.env.NEXTAUTH_URL;
+  if (!configuredBase) {
+    return NextResponse.json({ error: "The application URL is not configured yet." }, { status: 503 });
+  }
+
+  let origin: string;
+  try {
+    origin = new URL(configuredBase).origin;
+  } catch {
+    return NextResponse.json({ error: "The application URL configuration is invalid." }, { status: 500 });
+  }
+
   const stripe = new Stripe(secretKey);
   try {
     const checkout = await stripe.checkout.sessions.create({

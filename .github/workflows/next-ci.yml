@@ -27,6 +27,8 @@ jobs:
         run: npx prisma generate
       - name: Validate Prisma schema
         run: npx prisma validate
+        env:
+          DATABASE_URL: 'postgresql://USER:PASSWORD@localhost:5432/helpme?schema=public'
       - name: TypeScript check
         run: npm run typecheck
       - name: Production build
