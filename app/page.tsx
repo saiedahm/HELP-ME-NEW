@@ -1,3 +1,7 @@
+"use client";
+
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Brand from "./brand";
 import LanguageSwitcher from "./language-switcher";
@@ -10,6 +14,16 @@ const features = [
 ];
 
 export default function HomePage() {
+  const [draft, setDraft] = useState("");
+  const router = useRouter();
+
+  function openChat(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const message = draft.trim();
+    if (!message) return;
+    router.push(`/chat?draft=${encodeURIComponent(message)}`);
+  }
+
   return <main className="landing">
     <header className="landing-header">
       <Brand />
@@ -65,7 +79,7 @@ export default function HomePage() {
           <div className="demo-bubble">Hello! How can I help you today?</div>
           <div className="demo-bubble user-bubble">I need help understanding a service.</div>
           <div className="demo-bubble">Of course. Tell me what you need and I’ll guide you step by step.</div>
-          <Link href="/chat" className="demo-input">Ask anything... <span>➜</span></Link>
+          <form className="demo-input" onSubmit={openChat} aria-label="Write a message to HELP-ME"><input aria-label="Your message" value={draft} onChange={event => setDraft(event.target.value)} placeholder="Write your message..." maxLength={4000} /><button type="submit" aria-label="Continue to chat" disabled={!draft.trim()}>➜</button></form>
         </div>
       </div>
     </section>
