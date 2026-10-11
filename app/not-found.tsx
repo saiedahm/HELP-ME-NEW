@@ -1,0 +1,3 @@
+import Link from "next/link";
+import Brand from "./brand";
+export default function NotFound(){return <main className="legal-page"><header className="legal-header"><Brand/></header><section className="legal-card"><p className="landing-eyebrow">404 · PAGE NOT FOUND</p><h1>This page could not be found.</h1><p>The address may have changed, or the page may not be available yet.</p><p><Link href="/">Return to HELP-ME home</Link> · <Link href="/contact">Contact us</Link></p></section></main>}
