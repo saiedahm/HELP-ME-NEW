@@ -201,3 +201,39 @@
 .typing-indicator small{margin-left:6px;color:#7890ae}
 @keyframes helpme-pulse{0%,80%,100%{opacity:.35;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
 @media(max-width:700px){.chat-shell{width:calc(100% - 16px);padding-bottom:8px}.chat-top{height:auto;min-height:76px;align-items:flex-start;padding:12px 0;flex-wrap:wrap}.chat-header-right{width:100%;justify-content:space-between}.chat-panel{height:calc(100dvh - 148px);min-height:480px;margin-top:8px;border-radius:17px}.chat-title-bar{padding:13px 15px}.chat-title-bar h1{font-size:21px}.chat-title-bar p{font-size:12px}.messages{padding:16px 10px;gap:14px}.chat-message{max-width:88%;padding:12px 13px;font-size:14px}.chat-message-avatar{width:28px;height:28px}.chat-input{gap:6px;padding:7px;margin:0 8px;border-radius:14px}.chat-input input{font-size:14px;min-height:44px;padding:8px}.chat-input-symbol{width:30px;height:30px}.chat-send-button{width:44px;height:44px;flex-basis:44px}.chat-privacy-note{margin:7px 8px 9px;font-size:10px}}
+
+
+/* Uploaded HELP-ME identity, shared legal footer and final responsive polish */
+.brand-uploaded-logo{display:block;width:58px;height:58px;object-fit:contain;flex:0 0 auto;filter:drop-shadow(0 5px 14px rgba(42,132,255,.16))}
+.brand-modern{gap:10px;min-width:0}
+.brand-word{white-space:nowrap}
+.brand-compact .brand-uploaded-logo{width:44px;height:44px}
+.digitalfuture-footer{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px;padding:28px 20px 20px;margin-top:30px;border-top:1px solid rgba(146,184,255,.16);background:rgba(4,9,20,.82);color:#9aabc4;text-align:center;font-size:13px}
+.digitalfuture-contact{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px 20px}
+.digitalfuture-footer a:hover,.global-legal-links a:hover{color:#ffd27a}
+.global-legal-links{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px 20px;margin-top:4px}
+.global-legal-links a{display:inline-flex;align-items:center;gap:7px;padding:7px 9px;border:1px solid rgba(255,210,122,.2);border-radius:10px;color:#d7e2f4;transition:color .2s,border-color .2s,background .2s}
+.global-legal-links a:hover{border-color:rgba(255,210,122,.65);background:rgba(255,210,122,.06)}
+.global-legal-links svg{color:#ffd27a;flex:0 0 auto}
+.global-copyright{color:#71829b;font-size:11px}
+.chat-page{min-height:calc(100dvh - 210px)}
+.chat-shell{width:min(calc(100% - 32px),1040px)}
+.chat-panel{min-height:min(760px,calc(100dvh - 160px));}
+.messages{flex:1;min-height:260px;max-height:calc(100dvh - 390px);overflow-y:auto;scroll-behavior:smooth}
+.chat-header-right{display:flex;align-items:center;justify-content:flex-end;gap:14px;flex-wrap:wrap}
+.language-switcher-modern{display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:7px 11px;border:1px solid rgba(255,210,122,.28);border-radius:12px;background:rgba(9,20,40,.88);color:#eaf3ff}
+.language-switcher-modern .language-icon{display:flex;align-items:center;color:#ffd27a}
+.language-switcher-modern select{max-width:170px;background:transparent;color:inherit;border:0;outline:none;font:inherit;cursor:pointer}
+.language-switcher-modern select option{background:#0b1222;color:#f5f8ff}
+@media(max-width:700px){
+ .brand-uploaded-logo{width:46px;height:46px}
+ .brand-compact .brand-uploaded-logo{width:38px;height:38px}
+ .brand-word{font-size:17px}
+ .digitalfuture-footer{padding:22px 12px 16px;gap:12px}
+ .global-legal-links{gap:8px}
+ .global-legal-links a{font-size:12px;padding:7px 8px}
+ .chat-page{min-height:calc(100dvh - 240px)}
+ .chat-panel{min-height:540px;height:calc(100dvh - 180px);padding:14px}
+ .messages{max-height:none;min-height:180px}
+ .language-switcher-modern select{max-width:145px}
+}
