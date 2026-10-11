@@ -33,4 +33,52 @@
 <section class="section" id="about"><div class="eyebrow">ABOUT HELP-ME</div><h2>Clear answers, with people still in control.</h2><p class="intro">HELP-ME is being developed as a customer-support SaaS. AI should assist people, not replace qualified human judgement for important decisions. The production launch comes only after technical, privacy and legal checks.</p></section>
 </main>
 <footer class="footer wrap"><a class="brand" href="#home"><span style="color:#e9b958">◉</span><span>HELP<span style="color:#54dcff">-ME</span></span></a><div class="legal"><a href="https://github.com/saiedahm/HELP-ME-NEW">Source repository</a><a href="#about">About</a><a href="#preview-note">Preview notice</a></div><span>© 2026 HELP-ME · Independent design preview</span></footer>
+
+<style>
+/* The GitHub Pages design preview needs its own footer because it does not run Next.js layouts. */
+.footer{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:15px;padding:32px 12px 24px!important;margin-top:28px}
+.footer .legal{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.footer .legal button{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid #e9b95866;border-radius:12px;background:linear-gradient(135deg,#ffffff09,#ffffff02);color:#eaf0fb;font:inherit;cursor:pointer;transition:.18s}
+.footer .legal button:hover{border-color:#f3ca77;background:#e9b95812;transform:translateY(-1px)}
+.legal-popover{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;padding:20px;background:#020611cc;backdrop-filter:blur(12px)}
+.legal-box{width:min(820px,100%);max-height:88dvh;overflow:auto;border:1px solid #e9b95899;border-radius:22px;background:linear-gradient(145deg,#111f37,#070d19);box-shadow:0 35px 100px #000a;color:#f4f8ff;text-align:left}
+.legal-box-head{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;gap:20px;padding:22px 25px;border-bottom:1px solid #e9b95830;background:#101b30f5}
+.legal-box-head small{color:#e9b958;font-size:10px;font-weight:800;letter-spacing:.16em}.legal-box-head h2{margin:8px 0 0;font-size:30px}
+.legal-x{width:42px;height:42px;border-radius:50%;border:1px solid #e9b95899;background:#e9b95812;color:#ffdc91;font-size:29px;cursor:pointer}.legal-box-content{padding:24px 28px;line-height:1.75}.legal-box-content h3{margin:0 0 16px;font-size:22px}.legal-box-content dl{display:grid;grid-template-columns:170px 1fr;gap:0 20px}.legal-box-content dt,.legal-box-content dd{margin:0;padding:12px 0;border-bottom:1px solid #90baff20}.legal-box-content dt{color:#aabbd3}.legal-box-content dd{overflow-wrap:anywhere}.legal-box-content a{color:#66dfff;text-decoration:underline;text-underline-offset:3px}.legal-box-content iframe{width:100%;height:48dvh;border:1px solid #90baff30;border-radius:12px;background:white}.legal-box-content .legal-note{color:#aabbd3;font-size:13px}
+@media(max-width:600px){.legal-popover{padding:10px}.legal-box{max-height:94dvh;border-radius:16px}.legal-box-head{padding:17px}.legal-box-content{padding:18px 16px}.legal-box-content dl{grid-template-columns:1fr}.legal-box-content dt{padding-bottom:2px;border-bottom:0}.legal-box-content dd{padding-top:3px}.footer .legal button{font-size:12px;padding:8px 10px}}
+</style>
+<script>
+(function(){
+ const footer=document.querySelector("footer.footer");
+ if(!footer)return;
+ const logo=document.createElement("img");logo.src="help-me-logo.png";logo.alt="HELP-ME";logo.width=58;logo.height=58;logo.style.cssText="object-fit:contain;filter:drop-shadow(0 0 12px #168cff44)";
+ const brand=footer.querySelector(".brand");if(brand){brand.innerHTML="";brand.appendChild(logo);const word=document.createElement("span");word.textContent="HELP-ME";word.style.cssText="font-weight:900;letter-spacing:.12em;color:#f4f8ff";brand.appendChild(word)}
+ const legal=footer.querySelector(".legal");if(!legal)return;
+ legal.innerHTML="";
+ const entries=[
+  ["widerruf","↶","Widerruf","https://www.digital-future.ai/widerruf.html"],
+  ["agb","▤","AGB","https://www.digital-future.ai/agb.html"],
+  ["datenschutz","♧","Datenschutz","https://www.digital-future.ai/datenschutz.html"],
+  ["impressum","ⓘ","Impressum","https://www.digital-future.ai/impressum.html"],
+  ["cookies","◉","Cookie settings","https://www.digital-future.ai/datenschutz.html"]
+ ];
+ let overlay=null;
+ function close(){if(overlay){overlay.remove();overlay=null;document.body.style.overflow=""}document.removeEventListener("keydown",escapeClose)}
+ function escapeClose(e){if(e.key==="Escape")close()}
+ function open(entry){
+  close();overlay=document.createElement("div");overlay.className="legal-popover";overlay.innerHTML='<section class="legal-box" role="dialog" aria-modal="true" aria-labelledby="legal-box-title"><header class="legal-box-head"><div><small>DIGITAL FUTURE · RECHTLICHE INFORMATIONEN</small><h2 id="legal-box-title"></h2></div><button type="button" class="legal-x" aria-label="Fenster schließen" title="Schließen">×</button></header><div class="legal-box-content"></div></section>';
+  overlay.querySelector("h2").textContent=entry[2];const body=overlay.querySelector(".legal-box-content");
+  if(entry[0]==="impressum"){
+   body.innerHTML='<p style="color:#e9b958;font-size:10px;font-weight:800;letter-spacing:.15em">OFFIZIELLE KONTAKTINFORMATIONEN</p><h3>Betreiber / Anbieter</h3><dl><dt>Name</dt><dd>Akhmed Ismail Saied</dd><dt>Unternehmensname</dt><dd>digital future</dd><dt>Anschrift</dt><dd>Ehndofer Str. 130<br>24537 Neumünster<br>Deutschland</dd><dt>Kontakt / E-Mail</dt><dd><a href="mailto:contact@digital-future.ai">contact@digital-future.ai</a><br><a href="mailto:info@digital-future.ai">info@digital-future.ai</a><br><a href="mailto:server@digital-future.ai">server@digital-future.ai</a></dd><dt>Telefon</dt><dd><a href="tel:+4915123937937">+49 151 23937937</a></dd><dt>Weitere Website</dt><dd><a href="https://www.digital-future.ai" target="_blank" rel="noreferrer">https://www.digital-future.ai ↗</a></dd></dl>';
+  }else{
+   body.innerHTML='<p class="legal-note">Die offizielle Rechtsseite wird hier angezeigt, wenn die externe Website die Einbettung zulässt.</p><iframe title=""></iframe><p class="legal-note">Falls die Seite nicht geladen wird, öffnen Sie sie direkt: <a target="_blank" rel="noreferrer"></a></p>';
+   body.querySelector("iframe").title=entry[2];body.querySelector("iframe").src=entry[3];const a=body.querySelector("a");a.href=entry[3];a.textContent="Offizielle Seite öffnen ↗";
+  }
+  overlay.querySelector(".legal-x").addEventListener("click",close);overlay.addEventListener("mousedown",e=>{if(e.target===overlay)close()});document.body.appendChild(overlay);document.body.style.overflow="hidden";document.addEventListener("keydown",escapeClose);overlay.querySelector(".legal-x").focus();
+ }
+ entries.forEach(entry=>{const button=document.createElement("button");button.type="button";button.innerHTML='<span style="color:#e9b958;font-size:17px"></span><span></span>';button.querySelector("span").textContent=entry[1];button.querySelectorAll("span")[1].textContent=entry[2];button.addEventListener("click",()=>open(entry));legal.appendChild(button)});
+ const copyright=footer.querySelector("span:last-child");if(copyright)copyright.textContent="© 2026 HELP-ME · DIGITAL FUTURE. Alle Rechte vorbehalten.";
+})();
+</script>
+
 </body></html>
