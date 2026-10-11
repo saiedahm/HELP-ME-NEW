@@ -5,12 +5,12 @@ import Link from "next/link";
 import Brand from "../brand";
 import LanguageSwitcher from "../language-switcher";
 
-type Message = { role: "user" | "assistant"; content: string };
+type Message = { role: "user" | "assistant"; content: string; createdAt: string };
 type SessionStatus = "checking" | "signed-in" | "guest";
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: "Hello! I’m HELP-ME. Sign in to save your conversations and get workspace-specific assistance." }
+    { role: "assistant", content: "Hello! I’m HELP-ME. Sign in to save your conversations and get workspace-specific assistance.", createdAt: new Date().toISOString() }
   ]);
   const [input, setInput] = useState("");
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -45,7 +45,7 @@ export default function ChatPage() {
     if (!content || loading || sessionStatus !== "signed-in") return;
     setInput("");
     setError("");
-    setMessages(current => [...current, { role: "user", content }]);
+    setMessages(current => [...current, { role: "user", content, createdAt: new Date().toISOString() }]);
     setLoading(true);
     try {
       const response = await fetch("/api/chat", {
@@ -56,10 +56,10 @@ export default function ChatPage() {
       const data = await response.json();
       if (!response.ok) {
         setError(data.error || "The assistant is temporarily unavailable.");
-        setMessages(current => [...current, { role: "assistant", content: data.error || "Please try again." }]);
+        setMessages(current => [...current, { role: "assistant", content: data.error || "Please try again.", createdAt: new Date().toISOString() }]);
       } else {
         setConversationId(data.conversationId);
-        setMessages(current => [...current, { role: "assistant", content: data.reply }]);
+        setMessages(current => [...current, { role: "assistant", content: data.reply, createdAt: new Date().toISOString() }]);
       }
     } catch {
       setError("The assistant is temporarily unavailable. Please check your connection and try again.");
@@ -93,7 +93,7 @@ export default function ChatPage() {
           <div className="messages" aria-live="polite" aria-label="Conversation messages">
             {messages.map((message, index) => <div className={`chat-message-row ${message.role}`} key={index}>
               {message.role === "assistant" && <span className="chat-message-avatar" aria-hidden="true">✦</span>}
-              <div className={`chat-message ${message.role}`}>{message.content}<time>{new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</time></div>
+              <div className={`chat-message ${message.role}`}>{message.content}<time dateTime={message.createdAt}>{new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</time></div>
             </div>)}
             {loading && <div className="chat-message-row assistant"><span className="chat-message-avatar" aria-hidden="true">✦</span><div className="chat-message assistant typing-indicator"><span /><span /><span /><small>Thinking…</small></div></div>}
             <div ref={messagesEndRef} aria-hidden="true" />
