@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import Brand from "../brand";
+import LanguageSwitcher from "../language-switcher";
 
 type Message = { role: "user" | "assistant"; content: string };
 type SessionStatus = "checking" | "signed-in" | "guest";
@@ -67,26 +68,37 @@ export default function ChatPage() {
       <div className="chat-shell">
         <header className="chat-top">
           <Brand />
-          <div className="chat-account-actions">
-            <Link className="button secondary" href="/">Home</Link>
-            {sessionStatus === "signed-in"
-              ? <Link className="button primary" href="/dashboard">Dashboard</Link>
-              : <Link className="button primary" href="/login">Sign in</Link>}
+          <div className="chat-header-right">
+            <LanguageSwitcher />
+            <div className="chat-account-actions">
+              <Link className="button secondary" href="/">Home</Link>
+              {sessionStatus === "signed-in"
+                ? <Link className="button primary" href="/dashboard">Dashboard</Link>
+                : <Link className="button primary" href="/login">Sign in</Link>}
+            </div>
           </div>
         </header>
-        <section className="chat-panel">
-          <div className="chat-title"><span className="eyebrow">AI SUPPORT ASSISTANT</span><h1>How can we help?</h1><p>Your conversations are saved to your private workspace. The assistant uses the configured AI provider; a demo response is used only when no AI key is configured.</p></div>
+        <section className="chat-panel" aria-label="HELP-ME conversation">
+          <div className="chat-title chat-title-bar">
+            <span className="chat-avatar" aria-hidden="true">✦</span>
+            <div><span className="eyebrow">HELP-ME · AI SUPPORT</span><h1>How can we help?</h1><p><span className="online-dot" /> Your private assistant conversation</p></div>
+          </div>
           {sessionStatus === "checking" && <div className="chat-access-note" role="status">Checking your secure session…</div>}
           {sessionStatus === "guest" && <div className="chat-access-note" role="status"><strong>Sign in to start your private conversation.</strong><span>Create an account to save chats and use your workspace assistant.</span><div><Link className="button primary" href="/login">Sign in</Link><Link className="button secondary" href="/signup">Create account</Link></div></div>}
-          <div className="messages" aria-live="polite">
-            {messages.map((message, index) => <div className={`chat-message ${message.role}`} key={index}>{message.content}</div>)}
-            {loading && <div className="chat-message assistant">Thinking…</div>}
+          <div className="messages" aria-live="polite" aria-label="Conversation messages">
+            {messages.map((message, index) => <div className={`chat-message-row ${message.role}`} key={index}>
+              {message.role === "assistant" && <span className="chat-message-avatar" aria-hidden="true">✦</span>}
+              <div className={`chat-message ${message.role}`}>{message.content}<time>{new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</time></div>
+            </div>)}
+            {loading && <div className="chat-message-row assistant"><span className="chat-message-avatar" aria-hidden="true">✦</span><div className="chat-message assistant typing-indicator"><span /><span /><span /><small>Thinking…</small></div></div>}
           </div>
           {error && <p className="status-message" role="alert">{error} {error.includes("Sign in") && <Link href="/login">Sign in here</Link>}</p>}
           <form className="chat-input" onSubmit={send}>
-            <input value={input} onChange={event => setInput(event.target.value)} placeholder={sessionStatus === "signed-in" ? "Ask HELP-ME anything…" : "Sign in to start a conversation"} aria-label="Message" maxLength={4000} disabled={sessionStatus !== "signed-in" || loading} />
-            <button className="button primary" type="submit" disabled={sessionStatus !== "signed-in" || loading || !input.trim()}>{loading ? "Sending…" : "Send"}</button>
+            <label className="chat-input-symbol" aria-hidden="true">＋</label>
+            <input value={input} onChange={event => setInput(event.target.value)} placeholder={sessionStatus === "signed-in" ? "Write your message…" : "Sign in to start a conversation"} aria-label="Message" maxLength={4000} disabled={sessionStatus !== "signed-in" || loading} />
+            <button className="button primary chat-send-button" type="submit" aria-label={loading ? "Sending message" : "Send message"} disabled={sessionStatus !== "signed-in" || loading || !input.trim()}>{loading ? "…" : "➤"}</button>
           </form>
+          <p className="chat-privacy-note">HELP-ME can make mistakes. Do not share passwords or sensitive payment information.</p>
         </section>
       </div>
     </main>
