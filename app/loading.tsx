@@ -1,0 +1,1 @@
+export default function Loading(){return <main className="legal-page"><section className="legal-card" aria-live="polite"><p className="landing-eyebrow">HELP-ME</p><h1>Preparing your page…</h1><p>Please wait while the page loads.</p><div className="loading-track"><span/></div></section></main>}
