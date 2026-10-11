@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum MembershipRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum ChatbotStatus {
+  ACTIVE
+  PAUSED
+}
+
+enum KnowledgeType {
+  TEXT
+  FAQ
+  WEBSITE
+  FILE
+}
+
+model User {
+  id                 String       @id @default(cuid())
+  email              String       @unique
+  name               String?
+  image              String?
+  passwordHash       String
+  privacyAcceptedAt  DateTime?
+  termsAcceptedAt    DateTime?
+  memberships        Membership[]
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+}
+
+model Organization {
+  id             String        @id @default(cuid())
+  name           String
+  memberships   Membership[]
+  chatbots       Chatbot[]
+  knowledge      KnowledgeDocument[]
+  conversations  Conversation[]
+  subscriptions  Subscription[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model Membership {
+  id             String         @id @default(cuid())
+  userId         String
+  organizationId String
+  role           MembershipRole @default(MEMBER)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now())
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+}
+
+model Chatbot {
+  id             String         @id @default(cuid())
+  organizationId String
+  name           String
+  status         ChatbotStatus  @default(ACTIVE)
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  conversations  Conversation[]
+  knowledge      KnowledgeDocument[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([organizationId])
+}
+
+model KnowledgeDocument {
+  id             String        @id @default(cuid())
+  organizationId String
+  chatbotId      String?
+  title          String
+  content        String
+  type           KnowledgeType @default(TEXT)
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  chatbot        Chatbot?      @relation(fields: [chatbotId], references: [id], onDelete: SetNull)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([organizationId])
+  @@index([chatbotId])
+}
+
+model Conversation {
+  id             String        @id @default(cuid())
+  organizationId String
+  chatbotId      String
+  visitorId      String?
+  title          String?
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  chatbot        Chatbot       @relation(fields: [chatbotId], references: [id], onDelete: Cascade)
+  messages       Message[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([organizationId])
+  @@index([chatbotId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  role           String
+  content        String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId])
+}
+
+model Subscription {
+  id                   String   @id @default(cuid())
+  organizationId       String
+  stripeCustomerId     String?
+  stripeSubscriptionId String   @unique
+  plan                 String
+  status               String
+  currentPeriodEnd     DateTime?
+  organization         Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([stripeCustomerId])
+  @@index([status])
+}
