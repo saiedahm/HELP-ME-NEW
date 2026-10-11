@@ -42,7 +42,11 @@ export default function ChatPage() {
   async function send(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const content = input.trim();
-    if (!content || loading || sessionStatus !== "signed-in") return;
+    if (!content || loading || sessionStatus === "checking") return;
+    if (sessionStatus !== "signed-in") {
+      setError("A free account is enough to start — a paid subscription is not required. Sign in or create a free account to send your message.");
+      return;
+    }
     setInput("");
     setError("");
     setMessages(current => [...current, { role: "user", content, createdAt: new Date().toISOString() }]);
@@ -101,8 +105,8 @@ export default function ChatPage() {
           {error && <p className="status-message" role="alert">{error} {error.includes("Sign in") && <Link href="/login">Sign in here</Link>}</p>}
           <form className="chat-input" onSubmit={send}>
             <label className="chat-input-symbol" aria-hidden="true">＋</label>
-            <input value={input} onChange={event => setInput(event.target.value)} placeholder={sessionStatus === "signed-in" ? "Write your message…" : "Sign in to start a conversation"} aria-label="Message" maxLength={4000} disabled={sessionStatus !== "signed-in" || loading} />
-            <button className="button primary chat-send-button" type="submit" aria-label={loading ? "Sending message" : "Send message"} disabled={sessionStatus !== "signed-in" || loading || !input.trim()}>{loading ? "…" : "➤"}</button>
+            <input value={input} onChange={event => { setInput(event.target.value); if (error) setError(""); }} placeholder={sessionStatus === "signed-in" ? "Write your message…" : sessionStatus === "checking" ? "Checking your account…" : "Write a message — sign in to send"} aria-label="Message" maxLength={4000} disabled={sessionStatus === "checking" || loading} />
+            <button className="button primary chat-send-button" type="submit" aria-label={loading ? "Sending message" : "Send message"} disabled={sessionStatus === "checking" || loading || !input.trim()}>{loading ? "…" : "➤"}</button>
           </form>
           <p className="chat-privacy-note">HELP-ME can make mistakes. Do not share passwords or sensitive payment information.</p>
         </section>
