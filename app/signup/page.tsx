@@ -37,7 +37,8 @@ export default function SignupPage() {
 
   return (
     <main className="site-shell">
-      <section className="panel auth-panel auth-panel-closable">\n        <Link className="auth-close" href="/" aria-label="Close registration and return home" title="Close">×</Link>
+      <section className="panel auth-panel auth-panel-closable">
+        <Link className="auth-close" href="/" aria-label="Close registration and return home" title="Close">×</Link>
         <span className="eyebrow">HELP-ME · ACCOUNT</span>
         <h1>Create your account</h1>
         <p>Create a secure workspace for your customer-support assistant.</p>
