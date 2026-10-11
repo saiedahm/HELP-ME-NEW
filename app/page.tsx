@@ -5,7 +5,7 @@ import LanguageSwitcher from "./language-switcher";
 const features = [
   { icon: "ϟ", title: "Fast Support", detail: "Get answers instantly" },
   { icon: "♧", title: "Smart AI", detail: "Accurate & helpful" },
-  { icon: "⬡", title: "Secure", detail: "Your data is safe" },
+  { icon: "⬡", title: "Secure", detail: "Workspace access controls" },
   { icon: "◎", title: "Multi-Language", detail: "20 languages" }
 ];
 
@@ -116,7 +116,7 @@ export default function HomePage() {
       <a href="https://www.digital-future.ai/" className="footer-link" target="_blank" rel="noopener noreferrer">↗ &nbsp; DIGITAL FUTURE STATE</a>
       <a href="mailto:info@nexoraonline.de" className="footer-link">✉ &nbsp; info@nexoraonline.de</a>
       <nav className="legal-links" aria-label="Rechtliche Informationen">
-        <a href="https://www.digital-future.ai/widerruf.html" target="_blank" rel="noopener noreferrer">Widerruf</a><i>|</i><a href="https://www.digital-future.ai/agb.html" target="_blank" rel="noopener noreferrer">AGB</a><i>|</i><a href="https://www.digital-future.ai/datenschutz.html" target="_blank" rel="noopener noreferrer">Datenschutz</a><i>|</i><Link href="/impressum">Impressum</Link><i>|</i><Link href="/cookie-settings">Cookie settings</Link>
+        <Link href="/withdrawal">Widerruf</Link><i>|</i><Link href="/terms">AGB / Terms</Link><i>|</i><Link href="/privacy">Datenschutz</Link><i>|</i><Link href="/impressum">Impressum</Link><i>|</i><Link href="/cookie-settings">Cookie settings</Link>
       </nav>
       <small className="copyright">© 2026 HELP-ME. All rights reserved.</small>
     </footer>
