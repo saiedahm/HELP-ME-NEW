@@ -70,7 +70,7 @@ export default async function DashboardPage() {
       <section className="dashboard shell">
         <div className="dashboard-head">
           <div><span className="eyebrow">BUSINESS DASHBOARD</span><h1>Welcome, {user.name || "there"}.</h1><p>{organization ? organization.name : "Your workspace"} · Your account overview.</p></div>
-          <span className="plan-badge">{activePlan} · {subscriptionIsActive ? subscription.status.toUpperCase() : "STARTER"}</span>
+          <span className="plan-badge">{activePlan} · {subscriptionIsActive ? subscription.status.toUpperCase() : "FREE PLAN"}</span>
         </div>
         <div className="stats">
           <div><strong>{organization?._count.conversations ?? 0}</strong><span>Saved conversations</span></div>

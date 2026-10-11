@@ -154,3 +154,11 @@
 
 /* The landing page already has its complete branded footer. */
 .landing + .digitalfuture-footer{display:none}
+
+
+/* Chat access states and responsive account actions */
+.chat-account-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.chat-access-note{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin:18px 0;padding:18px;border:1px solid rgba(233,185,88,.42);border-radius:15px;background:linear-gradient(120deg,rgba(233,185,88,.09),rgba(20,111,220,.08));color:var(--text)}
+.chat-access-note>span{color:var(--muted);line-height:1.65}
+.chat-access-note>div{display:flex;gap:10px;flex-wrap:wrap}
+@media(max-width:560px){.chat-account-actions{gap:6px}.chat-access-note{padding:14px}}
