@@ -385,3 +385,43 @@ html,body{max-width:100%;overflow-x:hidden}
  .chat-input{margin:8px 0 0;padding:8px}
  .chat-privacy-note{font-size:10px}
 }
+
+
+/* Homepage message composer */
+.chat-demo form.demo-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.chat-demo .demo-input input {
+  flex: 1 1 auto;
+  width: 0;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+.chat-demo .demo-input input::placeholder {
+  color: var(--muted, #9aa9bd);
+  opacity: 1;
+}
+.chat-demo .demo-input button {
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 10px;
+  padding: 8px 12px;
+  background: var(--accent, #19c6e8);
+  color: #071323;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.chat-demo .demo-input button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
