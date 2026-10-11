@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Brand from "./brand";
 import LanguageSwitcher from "./language-switcher";
@@ -15,13 +14,22 @@ const features = [
 
 export default function HomePage() {
   const [draft, setDraft] = useState("");
-  const router = useRouter();
+  const [demoMessages, setDemoMessages] = useState<Array<{ role: "assistant" | "user"; content: string }>>([
+    { role: "assistant", content: "Hello! How can I help you today?" },
+    { role: "user", content: "I need help understanding a service." },
+    { role: "assistant", content: "Of course. Tell me what you need and I’ll guide you step by step." }
+  ]);
 
-  function openChat(event: FormEvent<HTMLFormElement>) {
+  function tryDemo(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const message = draft.trim();
     if (!message) return;
-    router.push(`/chat?draft=${encodeURIComponent(message)}`);
+    setDemoMessages(current => [
+      ...current,
+      { role: "user", content: message },
+      { role: "assistant", content: "Thanks for trying HELP-ME! This is a demo preview, so replies are examples rather than live AI answers. Create a free account to chat with the full assistant." }
+    ]);
+    setDraft("");
   }
 
   return <main className="landing">
@@ -76,10 +84,12 @@ export default function HomePage() {
         <div className="tech-tile tile-people">♧</div>
         <div className="chat-demo">
           <div className="chat-demo-head"><span className="online-dot" /> <b>HELP-ME Assistant</b><small>Online</small></div>
-          <div className="demo-bubble">Hello! How can I help you today?</div>
-          <div className="demo-bubble user-bubble">I need help understanding a service.</div>
-          <div className="demo-bubble">Of course. Tell me what you need and I’ll guide you step by step.</div>
-          <form className="demo-input" onSubmit={openChat} aria-label="Write a message to HELP-ME"><input aria-label="Your message" value={draft} onChange={event => setDraft(event.target.value)} placeholder="Write your message..." maxLength={4000} /><button type="submit" aria-label="Continue to chat" disabled={!draft.trim()}>➜</button></form>
+          <div className="demo-transcript" aria-live="polite">
+            {demoMessages.slice(-5).map((message, index) => <div className={`demo-bubble ${message.role === "user" ? "user-bubble" : ""}`} key={index}>{message.content}</div>)}
+          </div>
+          <form className="demo-input" onSubmit={tryDemo} aria-label="Try a demo message to HELP-ME"><input aria-label="Your demo message" value={draft} onChange={event => setDraft(event.target.value)} placeholder="Try a message here..." maxLength={500} /><button type="submit" aria-label="Send demo message" disabled={!draft.trim()}>➜</button></form>
+          <p className="demo-disclaimer">Demo preview · Example replies only</p>
+          <Link href="/signup" className="demo-signup-link">Create a free account for the full assistant →</Link>
         </div>
       </div>
     </section>
