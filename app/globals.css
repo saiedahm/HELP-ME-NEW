@@ -268,3 +268,19 @@
 @keyframes legal-fade-in{from{opacity:0}to{opacity:1}}
 @keyframes legal-modal-in{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(max-width:600px){.digitalfuture-footer{padding:24px 12px 18px;gap:12px}.global-legal-links{gap:8px}.global-legal-links button{padding:8px 10px;font-size:12px}.legal-modal-backdrop{padding:10px}.legal-modal{max-height:94dvh;border-radius:17px}.legal-modal-header{padding:17px}.legal-modal-content{padding:18px 16px 22px}.legal-company-details dl{grid-template-columns:1fr;gap:0}.legal-company-details dt{padding-bottom:2px;border-bottom:0}.legal-company-details dd{padding-top:3px}.legal-modal-content iframe{height:50dvh}}
+
+/* Conversation polish: keep one familiar transcript and anchor the latest message. */
+.chat-panel{display:flex;flex-direction:column;gap:0;overflow:hidden}
+.messages{width:100%;flex:1;min-height:240px;max-height:calc(100dvh - 365px);padding:22px clamp(14px,3.5vw,42px);overscroll-behavior:contain}
+.chat-message-row{flex:0 0 auto}
+.chat-message{width:fit-content;max-width:min(78%,760px);font-size:15px;line-height:1.65;padding:13px 17px}
+.chat-input{flex:0 0 auto;margin:0 18px 0}
+.chat-input input{flex:1;width:100%}
+.legal-external-card{display:flex;flex-direction:column;align-items:flex-start;gap:13px;max-width:680px;margin:0 auto;padding:clamp(20px,4vw,36px);border:1px solid rgba(255,210,122,.22);border-radius:18px;background:linear-gradient(145deg,rgba(73,215,255,.055),rgba(255,210,122,.035))}
+.legal-external-icon{display:grid;place-items:center;width:48px;height:48px;border:1px solid rgba(255,210,122,.3);border-radius:14px;background:rgba(255,210,122,.08);color:#ffd27a;font-size:25px}
+.legal-external-card h3{margin:0;color:#f7f9ff;font-size:23px}
+.legal-external-card p{margin:0;color:#a9b9d0;line-height:1.8;font-size:14px}
+.legal-external-button{display:inline-flex;align-items:center;gap:12px;margin-top:4px;padding:13px 18px;border-radius:12px;background:linear-gradient(115deg,#55dcff,#6279ff);color:#061122!important;font-weight:850;text-decoration:none!important}
+.legal-external-url{overflow-wrap:anywhere;font-size:12px!important;color:#67dcff!important}
+.legal-external-note{border-left:2px solid #e9b958;padding:9px 12px;background:#e9b9580a}
+@media(max-width:700px){.messages{max-height:calc(100dvh - 410px);padding:14px 10px}.chat-message{max-width:88%;font-size:14px;padding:11px 13px}.chat-input{margin:0 8px}}
