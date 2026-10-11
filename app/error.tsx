@@ -1,0 +1,3 @@
+"use client";
+import { useEffect } from "react";
+export default function ErrorPage({error,reset}:{error:Error & {digest?:string};reset:()=>void}){useEffect(()=>{console.error("HELP-ME page error",error)},[error]);return <main className="legal-page"><section className="legal-card" role="alert"><p className="landing-eyebrow">TEMPORARY ISSUE</p><h1>This page could not load.</h1><p>Your account data has not been intentionally changed by this screen. Try loading the page again.</p><button className="start-button" onClick={()=>reset()}>Try again</button></section></main>}
