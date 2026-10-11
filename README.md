@@ -45,3 +45,11 @@ pnpm start
 8. Only after checks pass should a deployment be created and a domain-switch plan be prepared.
 
 GitHub stores the source code; it does not itself run a Next.js website. A running preview requires a build/runtime environment. No Vercel project or production-domain changes have been made as part of this repository setup.
+
+
+## Chat and legal interface notes
+- Chat messages show individual timestamps and the transcript follows the newest message.
+- Chat styling includes responsive message rows, readable bubbles, and a compact mobile composer.
+- Legal dialogs link to the official digital-future.ai pages instead of embedding external pages that may block framing.
+- Cookie settings currently links to the privacy notice; a dedicated consent-preference manager is not yet implemented.
+- GitHub Pages is a static visual preview only. Authentication, Next.js API routes, database operations and live AI replies require a running Next.js deployment with configured services.
