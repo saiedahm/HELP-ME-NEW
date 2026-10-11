@@ -1,0 +1,1 @@
+export default function ChatLoading(){return <main className="legal-page"><section className="legal-card" aria-live="polite"><p className="landing-eyebrow">HELP-ME ASSISTANT</p><h1>Preparing your conversation…</h1><p>Your chat will appear here when loading is complete.</p><div className="loading-track"><span/></div></section></main>}
