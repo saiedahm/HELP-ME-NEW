@@ -22,7 +22,8 @@ function LoginForm() {
     } catch { setError("Sign in is temporarily unavailable. Please try again."); }
     finally { setLoading(false); }
   }
-  return <section className="panel auth-panel auth-panel-closable">\n    <Link className="auth-close" href="/" aria-label="Close sign in and return home" title="Close">×</Link>
+  return <section className="panel auth-panel auth-panel-closable">
+    <Link className="auth-close" href="/" aria-label="Close sign in and return home" title="Close">×</Link>
     <span className="eyebrow">HELP-ME · SECURE ACCESS</span><h1>Welcome back</h1>
     {search.get("registered") === "1" && <p className="status-message">Your account was created. Sign in to continue.</p>}
     <p>Sign in to manage your workspace and AI support assistant.</p>
