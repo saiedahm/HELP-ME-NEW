@@ -1,0 +1,3 @@
+"use client";
+import "./globals.css";
+export default function GlobalError({reset}:{error:Error & {digest?:string};reset:()=>void}){return <html lang="en"><body><main className="legal-page"><section className="legal-card" role="alert"><p className="landing-eyebrow">HELP-ME</p><h1>We hit a temporary problem.</h1><p>Please try again. If the issue continues, return later or contact support.</p><button className="start-button" onClick={()=>reset()}>Try again</button></section></main></body></html>}
