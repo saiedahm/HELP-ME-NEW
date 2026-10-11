@@ -124,3 +124,22 @@
 .landing-header .header-actions .language-switcher-modern select{max-width:104px;min-height:28px}
 .landing-header .header-actions{padding-right:0!important;display:flex;align-items:center;gap:8px}
 @media(max-width:600px){.landing-header .header-actions .language-switcher-modern{min-height:34px;padding:3px 5px}.landing-header .header-actions .language-switcher-modern select{max-width:78px;font-size:11px}.landing-header .header-actions .language-switcher-modern .language-icon{width:24px;min-width:24px;height:24px}}
+
+
+/* Supporting pages for the independent HELP-ME build */
+.legal-page{min-height:100vh;padding:28px max(20px,calc((100vw - 1080px)/2));background:radial-gradient(ellipse at 80% 0%,rgba(31,105,255,.15),transparent 36%),#050914;color:#f4f8ff}
+.legal-header{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:12px 0 24px;border-bottom:1px solid rgba(135,181,255,.18);margin-bottom:34px}
+.legal-header>a:last-child{color:#67dfff;font-weight:700;text-decoration:none}
+.legal-card{max-width:1000px;margin:0 auto 50px;padding:clamp(22px,4vw,46px);border:1px solid rgba(135,181,255,.2);border-radius:22px;background:linear-gradient(150deg,rgba(15,29,51,.97),rgba(7,15,28,.98));box-shadow:0 22px 70px rgba(0,0,0,.2)}
+.legal-card h1{font-size:clamp(34px,5vw,56px);line-height:1.08;letter-spacing:-.045em;margin:14px 0 22px}
+.legal-card h2{font-size:22px;margin:30px 0 12px;color:#8deaff}
+.legal-card p,.legal-card li{font-size:16px;line-height:1.85;color:#b8c6db}
+.legal-card a{color:#67dfff;text-decoration:underline;text-underline-offset:3px}
+.legal-card ul{padding-left:24px}
+.pricing-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;margin:28px 0}
+.pricing-card{border:1px solid rgba(135,181,255,.2);border-radius:16px;padding:20px;background:#071224}
+.pricing-card h2{margin:0 0 6px;color:#f4f8ff}
+.pricing-card p{margin:8px 0}
+.pricing-status{display:inline-block;border:1px solid rgba(233,185,88,.4);border-radius:20px;padding:6px 10px;color:#f1d18a;font-size:12px}
+.contact-method{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:18px;border:1px solid rgba(135,181,255,.2);border-radius:14px;background:#071224}
+@media(max-width:620px){.legal-page{padding:14px}.legal-header{margin-bottom:18px}.pricing-grid{grid-template-columns:1fr}.legal-card{padding:20px}.legal-card p,.legal-card li{font-size:15px}}
