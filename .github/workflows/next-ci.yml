@@ -14,6 +14,20 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: helpme
+          POSTGRES_PASSWORD: helpme_test_password
+          POSTGRES_DB: helpme_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U helpme -d helpme_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -28,7 +42,11 @@ jobs:
       - name: Validate Prisma schema
         run: npx prisma validate
         env:
-          DATABASE_URL: 'postgresql://USER:PASSWORD@localhost:5432/helpme?schema=public'
+          DATABASE_URL: 'postgresql://helpme:helpme_test_password@localhost:5432/helpme_test?schema=public'
+      - name: Apply migrations to disposable PostgreSQL
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: 'postgresql://helpme:helpme_test_password@localhost:5432/helpme_test?schema=public'
       - name: TypeScript check
         run: npm run typecheck
       - name: Production build
