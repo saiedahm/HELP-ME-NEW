@@ -4,7 +4,16 @@ import { prisma } from "@/lib/db";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    let body: Record<string, unknown>;
+    try {
+      const parsed: unknown = await request.json();
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        return NextResponse.json({ error: "Invalid registration details." }, { status: 400 });
+      }
+      body = parsed as Record<string, unknown>;
+    } catch {
+      return NextResponse.json({ error: "Please send valid registration details." }, { status: 400 });
+    }
     const name = typeof body?.name === "string" ? body.name.trim() : "";
     const organizationName = typeof body?.organization === "string" ? body.organization.trim() : "";
     const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
@@ -32,6 +41,9 @@ export async function POST(request: Request) {
     });
     return NextResponse.json({ ok: true }, { status: 201 });
   } catch (error) {
+    if (typeof error === "object" && error !== null && "code" in error && error.code === "P2002") {
+      return NextResponse.json({ error: "An account with this email already exists." }, { status: 409 });
+    }
     console.error("Registration failed:", error);
     return NextResponse.json({ error: "Registration is temporarily unavailable. Please try again." }, { status: 500 });
   }

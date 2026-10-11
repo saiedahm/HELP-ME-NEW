@@ -33,7 +33,16 @@ export async function POST(request: Request) {
   try {
     const organizationId = await getWorkspace();
     if (!organizationId) return NextResponse.json({ error: "Sign in to manage your knowledge base." }, { status: 401 });
-    const body = await request.json();
+    let body: Record<string, unknown>;
+    try {
+      const parsed: unknown = await request.json();
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        return NextResponse.json({ error: "Invalid knowledge item." }, { status: 400 });
+      }
+      body = parsed as Record<string, unknown>;
+    } catch {
+      return NextResponse.json({ error: "Please send valid knowledge details." }, { status: 400 });
+    }
     const title = typeof body?.title === "string" ? body.title.trim() : "";
     const content = typeof body?.content === "string" ? body.content.trim() : "";
     if (!title || title.length > 160 || !content || content.length > 12000)

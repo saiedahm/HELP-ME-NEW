@@ -18,7 +18,16 @@ export async function POST(request: Request) {
       : null;
     if (!userId) return NextResponse.json({ error: "Sign in to save conversations." }, { status: 401 });
 
-    const body = await request.json();
+    let body: Record<string, unknown>;
+    try {
+      const parsed: unknown = await request.json();
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        return NextResponse.json({ error: "Invalid chat request." }, { status: 400 });
+      }
+      body = parsed as Record<string, unknown>;
+    } catch {
+      return NextResponse.json({ error: "Please send a valid chat message." }, { status: 400 });
+    }
     const message = typeof body?.message === "string" ? body.message.trim() : "";
     const conversationId = typeof body?.conversationId === "string" ? body.conversationId : null;
     if (!message || message.length > 4000)

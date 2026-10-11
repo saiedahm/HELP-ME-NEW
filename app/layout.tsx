@@ -4,7 +4,9 @@ import Brand from "./brand";
 
 export const metadata: Metadata = {
   title: "HELP-ME — Intelligent Assistance",
-  description: "Secure SaaS platform for intelligent assistance."
+  description: "A modern AI customer-support workspace with a knowledge base, saved conversations and team-ready tools.",
+  applicationName: "HELP-ME",
+  robots: { index: false, follow: false },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
