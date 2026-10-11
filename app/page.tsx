@@ -36,7 +36,7 @@ export default function HomePage() {
         <p>Get instant help, ask questions, and find the right answers. HELP-ME is your intelligent support platform for businesses, customers and everyone who needs fast, reliable and friendly assistance.</p>
         <div className="landing-ctas">
           <Link className="start-button" href="/chat">➜ &nbsp; Start Now</Link>
-          <a className="video-button" href="#about"><span>▶</span> Watch Video</a>
+          <a className="video-button" href="#business"><span>↗</span> How it works</a>
         </div>
         <div className="benefits" id="features">
           {features.map(item => <div className="benefit" key={item.title}>
