@@ -60,9 +60,14 @@ export default function LegalFooter() {
         </header>
         <div className="legal-modal-content">
           {active === "impressum" ? <CompanyImpressum /> : <>
-            <p className="legal-modal-intro">Die offizielle Seite von digital future wird hier angezeigt, sofern der externe Anbieter die Einbettung zulässt.</p>
-            <iframe title={item.label} src={item.url} loading="lazy" referrerPolicy="strict-origin-when-cross-origin" />
-            <p className="legal-modal-fallback">Falls die Seite in diesem Fenster nicht geladen wird, öffnen Sie sie direkt: <a href={item.url} target="_blank" rel="noreferrer">Offizielle Seite öffnen ↗</a></p>
+            <div className="legal-external-card">
+              <span className="legal-external-icon" aria-hidden="true">{item.icon}</span>
+              <h3>{item.label}</h3>
+              <p>Diese rechtliche Seite wird auf der offiziellen Website von digital future bereitgestellt. Um eine leere oder weiße Einbettung zu vermeiden, öffnen Sie das Dokument direkt über den sicheren Link.</p>
+              <a className="legal-external-button" href={item.url} target="_blank" rel="noreferrer">Offizielle Seite öffnen <span aria-hidden="true">↗</span></a>
+              <p className="legal-external-url">{item.url}</p>
+              {active === "cookies" && <p className="legal-external-note">Die Cookie-Einstellungen sind derzeit mit der Datenschutzerklärung verknüpft. Ein separates Einstellungsfenster ist noch nicht eingerichtet.</p>}
+            </div>
           </>}
         </div>
       </section>
