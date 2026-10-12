@@ -150,7 +150,7 @@ export default function HomePage() {
       // Keep safe defaults if browser storage is unavailable.
     }
   }, []);
-  const visibleProducts = useMemo(() => products.filter((p) => (activeCategory === "All" || p.type === activeCategory) && ((productCopy[language]?.[p.id]?.name ?? p.name) + " " + p.name + " " + p.type).toLowerCase().includes(search.toLowerCase())), [activeCategory, search]);
+  const visibleProducts = useMemo(() => products.filter((p) => (activeCategory === "All" || p.type === activeCategory) && ((productCopy[language]?.[p.id]?.name ?? p.name) + " " + p.name + " " + p.type).toLowerCase().includes(search.toLowerCase())), [activeCategory, search, language]);
 
   return (
     <main className="storefront" id="top" lang={language.toLowerCase()} dir={isArabic ? "rtl" : "ltr"}>
