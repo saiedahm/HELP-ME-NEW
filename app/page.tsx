@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const categories = [
   { name: "Beauty", ar: "الجمال والعناية", icon: "✧", note: "Fragrance, skincare & makeup" },
@@ -81,6 +81,17 @@ export default function HomePage() {
   const [notice, setNotice] = useState("");
   const [legalPanel, setLegalPanel] = useState<string | null>(null);
   const [cookiePrefs, setCookiePrefs] = useState({ necessary: true, analytics: false, marketing: false });
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem("helpme-cookie-preferences");
+      if (saved) {
+        const parsed = JSON.parse(saved) as { analytics?: boolean; marketing?: boolean };
+        setCookiePrefs({ necessary: true, analytics: Boolean(parsed.analytics), marketing: Boolean(parsed.marketing) });
+      }
+    } catch {
+      // Keep safe defaults if browser storage is unavailable.
+    }
+  }, []);
   const visibleProducts = useMemo(() => products.filter((p) => (activeCategory === "All" || p.type === activeCategory) && ((productCopy[language]?.[p.id]?.name ?? p.name) + " " + p.name + " " + p.type).toLowerCase().includes(search.toLowerCase())), [activeCategory, search]);
 
   return (
@@ -167,9 +178,9 @@ export default function HomePage() {
             <label><span><strong>{legalCopy[language]?.necessary}</strong><small>{legalCopy[language]?.necessaryDesc}</small></span><input type="checkbox" checked={cookiePrefs.necessary} disabled onChange={() => {}} /></label>
             <label><span><strong>{legalCopy[language]?.analytics}</strong><small>{legalCopy[language]?.analyticsDesc}</small></span><input type="checkbox" checked={cookiePrefs.analytics} onChange={(e) => setCookiePrefs((v) => ({ ...v, analytics: e.target.checked }))} /></label>
             <label><span><strong>{legalCopy[language]?.marketing}</strong><small>{legalCopy[language]?.marketingDesc}</small></span><input type="checkbox" checked={cookiePrefs.marketing} onChange={(e) => setCookiePrefs((v) => ({ ...v, marketing: e.target.checked }))} /></label>
-            <button className="primary-button ornate-save" onClick={() => { setLegalPanel(null); setNotice(legalCopy[language]?.saved ?? legalCopy.EN.saved); }}>{legalCopy[language]?.save} <span>✦</span></button>
+            <button className="primary-button ornate-save" onClick={() => { try { window.localStorage.setItem("helpme-cookie-preferences", JSON.stringify({ necessary: true, analytics: cookiePrefs.analytics, marketing: cookiePrefs.marketing })); } catch { /* Preferences remain active for this session. */ } setLegalPanel(null); setNotice(legalCopy[language]?.saved ?? legalCopy.EN.saved); }}>{legalCopy[language]?.save} <span>✦</span></button>
           </div> : <div className="legal-preview">
-            <p>{legalPanel === "widerruf" ? "{legalCopy[language]?.legal1}" : legalPanel === "agb" ? "{legalCopy[language]?.legal2}" : legalPanel === "datenschutz" ? "Hier erklären wir transparent, welche personenbezogenen Daten verarbeitet werden und welche Rechte du hast." : "Hier stehen die gesetzlich erforderlichen Anbieter- und Kontaktdaten von HELP-ME / Digitalfuture."}</p>
+            <p>{legalPanel === "widerruf" ? legalCopy[language]?.legal1 : legalPanel === "agb" ? legalCopy[language]?.legal2 : legalPanel === "datenschutz" ? legalCopy[language]?.legal3 : legalCopy[language]?.legal4}</p>
             <p className="legal-caution">{legalCopy[language]?.caution}</p>
             <a className="primary-button ornate-save" href={legalPanel === "widerruf" ? "https://www.digital-future.ai/widerruf.html" : legalPanel === "agb" ? "https://www.digital-future.ai/agb.html" : legalPanel === "datenschutz" ? "https://www.digital-future.ai/datenschutz.html" : "https://www.digital-future.ai/impressum.html"} target="_blank" rel="noreferrer">{legalCopy[language]?.open} <span>↗</span></a>
           </div>}
