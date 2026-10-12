@@ -100,7 +100,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .shipping-mark{font:800 20px/1 var(--sans);letter-spacing:-.055em;color:#43352e;white-space:nowrap}
 .shipping-partner.dhl .shipping-mark{color:#d40511;background:#ffcc00;font-style:italic;padding:4px 7px;letter-spacing:-.07em}
 .shipping-partner.ups .shipping-mark{color:#fff;background:#351c15;padding:4px 8px;border-radius:5px 5px 9px 9px;letter-spacing:-.08em}
-.shipping-partner.fedex .shipping-mark{color:#4d148c;letter-spacing:-.08em}.shipping-partner.fedex .shipping-mark::first-letter{color:#4d148c}
+.shipping-partner.fedex .shipping-mark{color:#4d148c;letter-spacing:-.08em}.shipping-partner.fedex .fedex-orange{color:#ff6600}.shipping-partner.fedex .shipping-mark::first-letter{color:#4d148c}
 .shipping-partner.dpd .shipping-mark{color:#dc0032;background:#fff;padding:3px 5px;border-bottom:3px solid #dc0032}
 .shipping-partner.gls .shipping-mark{color:#e4a800;border-bottom:3px solid #f5c400;padding:3px 5px}
 .shipping-partner small{font-size:9px;color:var(--muted);letter-spacing:.04em;text-align:center}
