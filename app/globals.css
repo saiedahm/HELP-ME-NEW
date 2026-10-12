@@ -105,3 +105,5 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .shipping-partner.gls .shipping-mark{color:#4b7044}
 .shipping-partner small{font-size:9px;color:var(--muted);letter-spacing:.04em;text-align:center}
 @media(max-width:680px){.shipping-partners{padding:40px 18px}.shipping-partners-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.shipping-partner:last-child{grid-column:1/-1}.shipping-mark{font-size:23px}}
+
+.shipping-partner.aramex .shipping-mark{color:#d5282e;font-size:23px;letter-spacing:-.07em}
