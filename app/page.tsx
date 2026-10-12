@@ -72,7 +72,7 @@ export default function HomePage() {
           <div className="photo-caption"><span>{t("photoTitle")}</span><b>{t("photoLine")}</b></div>
         </div>
         <div className="hero-side">
-          <p className="side-script">Shop Smart<br /><em>Live Beautiful</em></p>
+          <p className="side-script">{t("mantra")}<br /><em>{t("mantra2")}</em></p>
           <span className="side-flourish">✦</span>
           <p>{t("side")}</p>
         </div>
@@ -103,7 +103,7 @@ export default function HomePage() {
 
       <section className="edit-section section-pad" id="edit">
         <div className="section-heading-row"><div><span className="eyebrow">{t("curated")}</span><h2>{t("lovely")} <em>{t("chosen")}</em></h2></div><a href="#categories" className="text-button">{t("allCategories")}</a></div>
-        <div className="product-controls"><div className="filter-chips"><button className={activeCategory === "All" ? "filter-chip active" : "filter-chip"} onClick={() => setActiveCategory("All")}>{t("all")}</button>{["Beauty","Fashion","Bags","Jewelry","Technology","Gifts"].map((cat) => <button key={cat} className={activeCategory === cat ? "filter-chip active" : "filter-chip"} onClick={() => setActiveCategory(cat)}>{cat}</button>)}</div><input id="product-search" className="product-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="{t("search")}" aria-label="Search the product preview" /></div>
+        <div className="product-controls"><div className="filter-chips"><button className={activeCategory === "All" ? "filter-chip active" : "filter-chip"} onClick={() => setActiveCategory("All")}>{t("all")}</button>{["Beauty","Fashion","Bags","Jewelry","Technology","Gifts"].map((cat) => <button key={cat} className={activeCategory === cat ? "filter-chip active" : "filter-chip"} onClick={() => setActiveCategory(cat)}>{cat}</button>)}</div><input id="product-search" className="product-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("search")} aria-label="Search the product preview" /></div>
         <div className="product-grid">
           {visibleProducts.map((product) => <article className="product-card" key={product.id}><div className="product-image-wrap"><img src={product.image} alt="" className="product-image" loading="lazy" /><span className="product-tag">{product.tag}</span><button className="favorite-button" aria-label={"Save " + product.name} onClick={() => setNotice(t("favorites"))}>♡</button></div><div className="product-info"><span>{product.type}</span><h3>{product.name}</h3><div className="product-bottom"><b>{product.price}</b><button onClick={() => setNotice(t("sample"))}>{t("discoverBtn")} <span>→</span></button></div></div></article>)}
         </div>
