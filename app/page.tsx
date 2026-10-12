@@ -94,13 +94,14 @@ export default function HomePage() {
   const [notice, setNotice] = useState("");
   const [legalPanel, setLegalPanel] = useState<string | null>(null);
   useEffect(() => {
-    if (!legalPanel && !notice) return;
+    if (!legalPanel && !notice && !cartOpen) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setLegalPanel(null);
         setNotice("");
+        setCartOpen(false);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -108,7 +109,7 @@ export default function HomePage() {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [legalPanel, notice]);
+  }, [legalPanel, notice, cartOpen]);
 
   const [cookiePrefs, setCookiePrefs] = useState({ necessary: true, analytics: false, marketing: false });
   useEffect(() => {
@@ -202,7 +203,7 @@ export default function HomePage() {
           <div className="cart-head"><div><span className="cart-kicker">HELP-ME · PRIVATE EDIT</span><h2 id="cart-title">{cartText("title")}</h2></div><button className="cart-close" aria-label={legalCopy[language]?.close ?? "Close"} onClick={() => setCartOpen(false)}>×</button></div>
           <div className="cart-ornament" aria-hidden="true">✦ ─ ❦ ─ ✦</div>
           {cartItems.length === 0 ? <div className="cart-empty"><span>♧</span><p>{cartText("empty")}</p><button className="primary-button" onClick={() => { setCartOpen(false); document.getElementById("products")?.scrollIntoView({ behavior: "smooth" }); }}>{cartText("continue")} <span>→</span></button></div> : <div className="cart-lines">
-            {cartItems.map((item) => { const product = products.find((entry) => entry.id === item.id); if (!product) return null; return <article className="cart-line" key={item.id}><img src={product.image} alt="" /><div className="cart-line-info"><span>{categoryTranslations[language]?.[product.type] ?? product.type}</span><h3>{productCopy[language]?.[product.id]?.name ?? product.name}</h3><small>{cartText("price")}</small><div className="cart-line-actions"><div className="cart-quantity"><button aria-label="Decrease quantity" onClick={() => setCartItems((items) => items.flatMap((entry) => entry.id !== item.id ? [entry] : entry.quantity > 1 ? [{ ...entry, quantity: entry.quantity - 1 }] : []))}>−</button><span>{item.quantity}</span><button aria-label="Increase quantity" onClick={() => setCartItems((items) => items.map((entry) => entry.id === item.id ? { ...entry, quantity: entry.quantity + 1 } : entry))}>＋</button></div><button className="cart-remove" onClick={() => setCartItems((items) => items.filter((entry) => entry.id !== item.id))}>{cartText("remove")}</button></div></div></article>; })}
+            {cartItems.map((item) => { const product = products.find((entry) => entry.id === item.id); if (!product) return null; return <article className="cart-line" key={item.id}><img src={product.image} alt="" /><div className="cart-line-info"><span>{categoryTranslations[language]?.[product.type] ?? product.type}</span><h3>{productCopy[language]?.[product.id]?.name ?? product.name}</h3><small>{cartText("price")}</small><div className="cart-line-actions"><div className="cart-quantity"><button aria-label={language === "AR" ? "تقليل العدد" : language === "DE" ? "Anzahl verringern" : language === "TR" ? "Adedi azalt" : language === "RU" ? "Уменьшить количество" : language === "FR" ? "Diminuer la quantité" : "Decrease quantity"} onClick={() => setCartItems((items) => items.flatMap((entry) => entry.id !== item.id ? [entry] : entry.quantity > 1 ? [{ ...entry, quantity: entry.quantity - 1 }] : []))}>−</button><span>{item.quantity}</span><button aria-label={language === "AR" ? "زيادة العدد" : language === "DE" ? "Anzahl erhöhen" : language === "TR" ? "Adedi artır" : language === "RU" ? "Увеличить количество" : language === "FR" ? "Augmenter la quantité" : "Increase quantity"} onClick={() => setCartItems((items) => items.map((entry) => entry.id === item.id ? { ...entry, quantity: entry.quantity + 1 } : entry))}>＋</button></div><button className="cart-remove" onClick={() => setCartItems((items) => items.filter((entry) => entry.id !== item.id))}>{cartText("remove")}</button></div></div></article>; })}
           </div>}
           <div className="cart-foot"><p>{cartText("preview")}</p><button className="primary-button cart-checkout" disabled onClick={() => {}}>{cartText("checkout")} <span>✦</span></button><button className="cart-continue" onClick={() => setCartOpen(false)}>{cartText("continue")}</button></div>
         </aside>
