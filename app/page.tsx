@@ -76,6 +76,33 @@ export default function HomePage() {
   const [search, setSearch] = useState("");
   const [cartItems, setCartItems] = useState<{ id: number; quantity: number }[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
+  const [cartHydrated, setCartHydrated] = useState(false);
+  useEffect(() => {
+    try {
+      const savedCart = window.localStorage.getItem("helpme-shopping-bag");
+      if (savedCart) {
+        const parsed = JSON.parse(savedCart);
+        if (Array.isArray(parsed)) {
+          const validItems = parsed.filter((item): item is { id: number; quantity: number } =>
+            item && Number.isInteger(item.id) && Number.isInteger(item.quantity) && item.quantity > 0
+          );
+          setCartItems(validItems);
+        }
+      }
+    } catch {
+      // Keep the empty bag if saved browser data is invalid or unavailable.
+    } finally {
+      setCartHydrated(true);
+    }
+  }, []);
+  useEffect(() => {
+    if (!cartHydrated) return;
+    try {
+      window.localStorage.setItem("helpme-shopping-bag", JSON.stringify(cartItems));
+    } catch {
+      // The bag still works for the current visit if storage is unavailable.
+    }
+  }, [cartItems, cartHydrated]);
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
   const cartText = (key: string) => {
     const messages: Record<string, Record<string, string>> = {
