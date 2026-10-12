@@ -138,7 +138,8 @@ export default function HomePage() {
           <div className="ornate-bottom-ornament" aria-hidden="true">❧</div>
         </section>
       </div>}
-\n      {notice && <div className="notice-backdrop" role="presentation" onClick={() => setNotice("")}><div className="notice-dialog" role="dialog" aria-modal="true" aria-label="Store preview notice" onClick={(e) => e.stopPropagation()}><span className="notice-star">✦</span><h3>{t("noticeTitle")}</h3><p>{notice}</p><button className="primary-button" onClick={() => setNotice("")}>{t("understood")} <span>→</span></button></div></div>}
+
+      {notice && <div className="notice-backdrop" role="presentation" onClick={() => setNotice("")}><div className="notice-dialog" role="dialog" aria-modal="true" aria-label="Store preview notice" onClick={(e) => e.stopPropagation()}><span className="notice-star">✦</span><h3>{t("noticeTitle")}</h3><p>{notice}</p><button className="primary-button" onClick={() => setNotice("")}>{t("understood")} <span>→</span></button></div></div>}
     </main>
   );
 }
