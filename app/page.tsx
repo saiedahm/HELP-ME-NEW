@@ -41,6 +41,8 @@ export default function HomePage() {
   const t = (key: string) => copy[language]?.[key] ?? copy.EN[key] ?? key;
   const isArabic = language === "AR";
   const [notice, setNotice] = useState("");
+  const [legalPanel, setLegalPanel] = useState<string | null>(null);
+  const [cookiePrefs, setCookiePrefs] = useState({ necessary: true, analytics: false, marketing: false });
   const visibleProducts = useMemo(() => products.filter((p) => (activeCategory === "All" || p.type === activeCategory) && (p.name + " " + p.type).toLowerCase().includes(search.toLowerCase())), [activeCategory, search]);
 
   return (
@@ -113,8 +115,30 @@ export default function HomePage() {
 
       <section className="newsletter section-pad"><div><span className="eyebrow">{t("newsletter")}</span><h2>{t("coming")} <em>{t("coming2")}</em></h2><p>{t("newsletterText")}</p></div><form onSubmit={(e) => { e.preventDefault(); setNotice(t("newsletterNotice")); }}><label htmlFor="newsletter-email">{t("email")}</label><div className="newsletter-field"><input id="newsletter-email" type="email" required placeholder="you@example.com" /><button type="submit" aria-label="Join newsletter">→</button></div><small>{t("noSpam")}</small></form></section>
 
-      <footer className="site-footer" id="footer"><div className="footer-top"><div className="footer-brand"><a href="#top" className="wordmark footer-wordmark"><span className="logo-leaf">✦</span><span className="logo-h">H</span>elpme<span className="registered">®</span><span className="logo-swish" /></a><p>Your style. Our mission.<br /><span lang="ar" dir="rtl">تسوّقي ما تحبين... نحن هنا لمساعدتك</span></p></div><div className="footer-column"><b>{t("explore")}</b><a href="#categories">Beauty & Fragrance</a><a href="#categories">Fashion & Lingerie</a><a href="#categories">Bags & Accessories</a><a href="#categories">Technology & Gifts</a></div><div className="footer-column"><b>{t("help")}</b><a href="mailto:info@nexoraonline.de">{t("contactUs")}</a><a href="#story">Our story</a><a href="#footer">{t("shipping")}</a><a href="#footer">{t("privacy")}</a></div><div className="footer-mantra"><span>✦</span><p>Shop Smart.<br /><em>Live Beautiful.</em></p></div></div><div className="footer-bottom"><span>© 2026 HELP-ME · Digitalfuture</span><span>{t("footerLine")}</span><a href="https://www.nexoraonline.de">nexoraonline.de ↗</a></div></footer>
-      {notice && <div className="notice-backdrop" role="presentation" onClick={() => setNotice("")}><div className="notice-dialog" role="dialog" aria-modal="true" aria-label="Store preview notice" onClick={(e) => e.stopPropagation()}><span className="notice-star">✦</span><h3>{t("noticeTitle")}</h3><p>{notice}</p><button className="primary-button" onClick={() => setNotice("")}>{t("understood")} <span>→</span></button></div></div>}
+      <footer className="site-footer" id="footer"><div className="footer-top"><div className="footer-brand"><a href="#top" className="wordmark footer-wordmark"><span className="logo-leaf">✦</span><span className="logo-h">H</span>elpme<span className="registered">®</span><span className="logo-swish" /></a><p>Your style. Our mission.<br /><span lang="ar" dir="rtl">تسوّقي ما تحبين... نحن هنا لمساعدتك</span></p></div><div className="footer-column"><b>{t("explore")}</b><a href="#categories">Beauty & Fragrance</a><a href="#categories">Fashion & Lingerie</a><a href="#categories">Bags & Accessories</a><a href="#categories">Technology & Gifts</a></div><div className="footer-column"><b>{t("help")}</b><a href="mailto:info@nexoraonline.de">{t("contactUs")}</a><a href="#story">{t("story")}</a><a href="#" onClick={(e) => { e.preventDefault(); setLegalPanel("widerruf"); }}>Widerruf</a><a href="#" onClick={(e) => { e.preventDefault(); setLegalPanel("agb"); }}>AGB</a><a href="#" onClick={(e) => { e.preventDefault(); setLegalPanel("datenschutz"); }}>Datenschutz</a><a href="#" onClick={(e) => { e.preventDefault(); setLegalPanel("impressum"); }}>Impressum</a><button className="footer-link-button" onClick={() => setLegalPanel("cookies")}>Cookie settings</button></div><div className="footer-mantra"><span>✦</span><p>Shop Smart.<br /><em>Live Beautiful.</em></p></div></div><div className="footer-bottom"><span>© 2026 HELP-ME · Digitalfuture</span><span>{t("footerLine")}</span><a href="https://www.nexoraonline.de">nexoraonline.de ↗</a></div></footer>
+
+      {legalPanel && <div className="ornate-backdrop" role="presentation" onClick={() => setLegalPanel(null)}>
+        <section className="ornate-dialog" role="dialog" aria-modal="true" aria-labelledby="ornate-title" onClick={(e) => e.stopPropagation()}>
+          <button className="ornate-close" aria-label="Close window" onClick={() => setLegalPanel(null)}>×</button>
+          <div className="ornate-top-ornament" aria-hidden="true">✦ ❦ ✦</div>
+          <p className="ornate-kicker">HELP-ME · DIGITALFUTURE</p>
+          <h2 id="ornate-title">{legalPanel === "cookies" ? "Cookie-Einstellungen" : legalPanel === "widerruf" ? "Widerruf" : legalPanel === "agb" ? "Allgemeine Geschäftsbedingungen (AGB)" : legalPanel === "datenschutz" ? "Datenschutzerklärung" : "Impressum"}</h2>
+          <div className="ornate-divider"><span>✧</span></div>
+          {legalPanel === "cookies" ? <div className="cookie-options">
+            <p>Du entscheidest, welche optionalen Cookies verwendet werden. Technisch notwendige Cookies bleiben aktiv, damit die Website funktioniert.</p>
+            <label><span><strong>Notwendig</strong><small>Für grundlegende Funktionen erforderlich.</small></span><input type="checkbox" checked={cookiePrefs.necessary} disabled onChange={() => {}} /></label>
+            <label><span><strong>Statistik</strong><small>Hilft uns, die Nutzung der Website besser zu verstehen.</small></span><input type="checkbox" checked={cookiePrefs.analytics} onChange={(e) => setCookiePrefs((v) => ({ ...v, analytics: e.target.checked }))} /></label>
+            <label><span><strong>Marketing</strong><small>Für personalisierte Werbung, sofern später eingesetzt.</small></span><input type="checkbox" checked={cookiePrefs.marketing} onChange={(e) => setCookiePrefs((v) => ({ ...v, marketing: e.target.checked }))} /></label>
+            <button className="primary-button ornate-save" onClick={() => { setLegalPanel(null); setNotice("Deine Cookie-Auswahl wurde für diese Vorschau übernommen. Eine dauerhafte Speicherung wird vor dem Live-Betrieb eingerichtet."); }}>Auswahl speichern <span>✦</span></button>
+          </div> : <div className="legal-preview">
+            <p>{legalPanel === "widerruf" ? "Hier findest du Informationen zum Widerrufsrecht und zum Ablauf eines Widerrufs." : legalPanel === "agb" ? "Hier werden die Allgemeinen Geschäftsbedingungen für den Einkauf bei HELP-ME bereitgestellt." : legalPanel === "datenschutz" ? "Hier erklären wir transparent, welche personenbezogenen Daten verarbeitet werden und welche Rechte du hast." : "Hier stehen die gesetzlich erforderlichen Anbieter- und Kontaktdaten von HELP-ME / Digitalfuture."}</p>
+            <p className="legal-caution">Bitte beachte: Die rechtlichen Inhalte müssen vor dem Verkaufsstart geprüft und vollständig an den tatsächlichen Betreiber, die angebotenen Waren und die Abläufe angepasst werden.</p>
+            <a className="primary-button ornate-save" href={legalPanel === "widerruf" ? "https://www.digital-future.ai/widerruf.html" : legalPanel === "agb" ? "https://www.digital-future.ai/agb.html" : legalPanel === "datenschutz" ? "https://www.digital-future.ai/datenschutz.html" : "https://www.digital-future.ai/impressum.html"} target="_blank" rel="noreferrer">Offizielle Seite öffnen <span>↗</span></a>
+          </div>}
+          <div className="ornate-bottom-ornament" aria-hidden="true">❧</div>
+        </section>
+      </div>}
+\n      {notice && <div className="notice-backdrop" role="presentation" onClick={() => setNotice("")}><div className="notice-dialog" role="dialog" aria-modal="true" aria-label="Store preview notice" onClick={(e) => e.stopPropagation()}><span className="notice-star">✦</span><h3>{t("noticeTitle")}</h3><p>{notice}</p><button className="primary-button" onClick={() => setNotice("")}>{t("understood")} <span>→</span></button></div></div>}
     </main>
   );
 }
