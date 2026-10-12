@@ -123,3 +123,23 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .trial-notice p{margin:4px 0 0;font-size:13px;line-height:1.65;max-width:1000px}
 .trial-status{margin-inline-start:auto;flex:0 0 auto;border:1px solid #c6a56d;border-radius:999px;padding:7px 12px;font-size:10px;letter-spacing:.08em;color:#8a6631;white-space:nowrap}
 @media(max-width:650px){.trial-notice{align-items:flex-start;gap:10px;padding:15px 16px;flex-wrap:wrap}.trial-notice-icon{font-size:21px}.trial-notice strong{font-size:11px}.trial-notice p{font-size:12px}.trial-status{margin-inline-start:31px}}
+
+
+/* Premium checkout preview — explicitly non-transactional during the supplier review phase. */
+.checkout-backdrop{position:fixed;inset:0;z-index:1200;background:rgba(37,22,26,.52);backdrop-filter:blur(7px);display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+.checkout-dialog{position:relative;width:min(100%,560px);max-height:min(92vh,900px);overflow-y:auto;background:linear-gradient(150deg,#fffdfb 0%,#fff8f6 58%,#fbf0e9 100%);border:1px solid #c9a66b;border-radius:22px;padding:34px clamp(20px,5vw,42px) 30px;box-shadow:0 30px 100px rgba(31,14,19,.28);color:#493438}
+.checkout-close{position:absolute;top:14px;inset-inline-end:16px;width:36px;height:36px;border:1px solid #eadbd5;border-radius:50%;background:#fffaf8;color:#67484c;font-size:25px;line-height:1;cursor:pointer}
+.checkout-brand-mark{width:42px;height:42px;display:grid;place-items:center;margin:0 auto 10px;border:1px solid #c6a365;border-radius:50%;color:#a47d3d;font-size:22px}
+.checkout-eyebrow{text-align:center;margin:0 0 8px;color:#9b7a4a;font-size:10px;letter-spacing:.2em}
+.checkout-dialog h2{text-align:center;margin:0;font-family:inherit;font-size:clamp(25px,4vw,32px);font-weight:500;letter-spacing:.015em;color:#533a3d}
+.checkout-intro{text-align:center;margin:10px auto 22px;max-width:420px;font-size:13px;line-height:1.7;color:#846d6b}
+.checkout-summary{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 14px;margin-bottom:18px;padding:15px 17px;border:1px solid #ead8ce;border-radius:13px;background:rgba(255,255,255,.66)}
+.checkout-summary span{font-size:12px;color:#795f5e}.checkout-summary strong{font-size:24px;font-weight:500;color:#805b4b}.checkout-summary small{grid-column:1/-1;font-size:11px;line-height:1.5;color:#9a807c}
+.payment-method-list{display:grid;gap:10px}
+.payment-method{display:grid;grid-template-columns:42px minmax(0,1fr) 20px;gap:12px;align-items:center;width:100%;padding:15px 14px;text-align:start;border:1px solid #eadbd5;border-radius:14px;background:rgba(255,255,255,.75);color:#553e40;cursor:pointer;transition:border-color .18s,background .18s,box-shadow .18s}
+.payment-method:hover{border-color:#c7a366}.payment-method.selected{border-color:#b39155;background:#fffaf0;box-shadow:inset 0 0 0 1px rgba(179,145,85,.22)}
+.payment-icon{width:40px;height:40px;display:grid;place-items:center;border-radius:11px;background:#f7eae6;color:#9b7556;font-size:20px}.payment-stripe{background:#ece8fb;color:#6350a4;font-weight:750;font-size:22px}
+.payment-method strong{display:block;font-size:13px;font-weight:650;line-height:1.5}.payment-method small{display:block;margin-top:3px;font-size:11px;line-height:1.5;color:#967d79}.payment-radio{color:#aa874c;font-size:17px;text-align:center}
+.checkout-preview-warning{display:flex;gap:10px;align-items:flex-start;margin:18px 0;padding:13px 14px;border:1px solid #e3cba1;border-radius:12px;background:#fff7e8;color:#795f3e}.checkout-preview-warning>span{font-size:16px;color:#ae8746}.checkout-preview-warning p{margin:0;font-size:11px;line-height:1.7}
+.checkout-confirm-preview{display:flex;justify-content:center;align-items:center;gap:12px;width:100%;padding:15px 18px;border:1px solid #b38e54;border-radius:999px;background:linear-gradient(105deg,#76534c,#a47c56);color:#fffaf5;font-size:13px;letter-spacing:.02em;cursor:pointer}.checkout-confirm-preview:hover{filter:brightness(1.04)}
+@media(max-width:520px){.checkout-backdrop{padding:10px;align-items:center}.checkout-dialog{padding:29px 17px 20px;border-radius:18px;max-height:94vh}.payment-method{grid-template-columns:36px minmax(0,1fr) 18px;padding:12px 10px;gap:10px}.payment-icon{width:36px;height:36px}.checkout-summary{padding:12px}}
