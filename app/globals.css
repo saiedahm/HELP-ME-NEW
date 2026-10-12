@@ -143,3 +143,5 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .checkout-preview-warning{display:flex;gap:10px;align-items:flex-start;margin:18px 0;padding:13px 14px;border:1px solid #e3cba1;border-radius:12px;background:#fff7e8;color:#795f3e}.checkout-preview-warning>span{font-size:16px;color:#ae8746}.checkout-preview-warning p{margin:0;font-size:11px;line-height:1.7}
 .checkout-confirm-preview{display:flex;justify-content:center;align-items:center;gap:12px;width:100%;padding:15px 18px;border:1px solid #b38e54;border-radius:999px;background:linear-gradient(105deg,#76534c,#a47c56);color:#fffaf5;font-size:13px;letter-spacing:.02em;cursor:pointer}.checkout-confirm-preview:hover{filter:brightness(1.04)}
 @media(max-width:520px){.checkout-backdrop{padding:10px;align-items:center}.checkout-dialog{padding:29px 17px 20px;border-radius:18px;max-height:94vh}.payment-method{grid-template-columns:36px minmax(0,1fr) 18px;padding:12px 10px;gap:10px}.payment-icon{width:36px;height:36px}.checkout-summary{padding:12px}}
+
+.payment-paypal{background:#e8f0ff;color:#164b9b;font-weight:800;font-style:italic;font-size:22px;letter-spacing:-.06em}
