@@ -77,6 +77,31 @@ export default function HomePage() {
   const [cartItems, setCartItems] = useState<{ id: number; quantity: number }[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [cartHydrated, setCartHydrated] = useState(false);
+  const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
+  const [favoritesHydrated, setFavoritesHydrated] = useState(false);
+  useEffect(() => {
+    try {
+      const savedFavorites = window.localStorage.getItem("helpme-favorite-products");
+      if (savedFavorites) {
+        const parsed: unknown = JSON.parse(savedFavorites);
+        if (Array.isArray(parsed)) {
+          setFavoriteIds(parsed.filter((id): id is number => Number.isInteger(id) && products.some((product) => product.id === id)));
+        }
+      }
+    } catch {
+      // Keep an empty favorites list if browser storage is unavailable or invalid.
+    } finally {
+      setFavoritesHydrated(true);
+    }
+  }, []);
+  useEffect(() => {
+    if (!favoritesHydrated) return;
+    try {
+      window.localStorage.setItem("helpme-favorite-products", JSON.stringify(favoriteIds));
+    } catch {
+      // Favorites still work for the current visit if storage is unavailable.
+    }
+  }, [favoriteIds, favoritesHydrated]);
   useEffect(() => {
     try {
       const savedCart = window.localStorage.getItem("helpme-shopping-bag");
@@ -214,7 +239,7 @@ export default function HomePage() {
         <div className="section-heading-row"><div><span className="eyebrow">{t("curated")}</span><h2>{t("lovely")} <em>{t("chosen")}</em></h2></div><a href="#categories" className="text-button">{t("allCategories")}</a></div>
         <div className="product-controls"><div className="filter-chips"><button className={activeCategory === "All" ? "filter-chip active" : "filter-chip"} onClick={() => setActiveCategory("All")}>{categoryTranslations[language]?.All ?? t("all")}</button>{["Beauty","Fashion","Bags","Jewelry","Technology","Gifts"].map((cat) => <button key={cat} className={activeCategory === cat ? "filter-chip active" : "filter-chip"} onClick={() => setActiveCategory(cat)}>{categoryTranslations[language]?.[cat] ?? cat}</button>)}</div><input id="product-search" className="product-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("search")} aria-label={language === "AR" ? "البحث في المنتجات التجريبية" : language === "DE" ? "Vorschauprodukte durchsuchen" : language === "TR" ? "Örnek ürünlerde ara" : language === "RU" ? "Поиск демонстрационных товаров" : language === "FR" ? "Rechercher dans les produits de démonstration" : "Search the product preview"} /></div>
         <div className="product-grid">
-          {visibleProducts.map((product) => <article className="product-card" key={product.id}><div className="product-image-wrap"><img src={product.image} alt="" className="product-image" loading="lazy" /><span className="product-tag">{productCopy[language]?.[product.id]?.tag ?? product.tag}</span><button className="favorite-button" aria-label={(language === "AR" ? "حفظ " : language === "DE" ? "Speichern: " : language === "TR" ? "Kaydet: " : language === "RU" ? "Сохранить: " : language === "FR" ? "Enregistrer : " : "Save ") + (productCopy[language]?.[product.id]?.name ?? product.name)} onClick={() => setNotice(t("favorites"))}>♡</button></div><div className="product-info"><span>{categoryTranslations[language]?.[product.type] ?? product.type}</span><h3>{productCopy[language]?.[product.id]?.name ?? product.name}</h3><div className="product-bottom"><b>{product.price}</b><button onClick={() => { setCartItems((items) => { const found = items.find((item) => item.id === product.id); return found ? items.map((item) => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item) : [...items, { id: product.id, quantity: 1 }]; }); setCartOpen(true); }}>{language === "AR" ? "أضيفي للحقيبة" : language === "DE" ? "In die Tasche" : language === "TR" ? "Sepete ekle" : language === "RU" ? "В корзину" : language === "FR" ? "Ajouter au panier" : "Add to bag"} <span>＋</span></button></div></div></article>)}
+          {visibleProducts.map((product) => <article className="product-card" key={product.id}><div className="product-image-wrap"><img src={product.image} alt="" className="product-image" loading="lazy" /><span className="product-tag">{productCopy[language]?.[product.id]?.tag ?? product.tag}</span><button className={favoriteIds.includes(product.id) ? "favorite-button is-favorite" : "favorite-button"} aria-pressed={favoriteIds.includes(product.id)} aria-label={(language === "AR" ? (favoriteIds.includes(product.id) ? "إزالة من المفضلة: " : "حفظ في المفضلة: ") : language === "DE" ? (favoriteIds.includes(product.id) ? "Aus Favoriten entfernen: " : "Zu Favoriten hinzufügen: ") : language === "TR" ? (favoriteIds.includes(product.id) ? "Favorilerden çıkar: " : "Favorilere ekle: ") : language === "RU" ? (favoriteIds.includes(product.id) ? "Убрать из избранного: " : "Добавить в избранное: ") : language === "FR" ? (favoriteIds.includes(product.id) ? "Retirer des favoris : " : "Ajouter aux favoris : ") : (favoriteIds.includes(product.id) ? "Remove from favorites: " : "Add to favorites: ")) + (productCopy[language]?.[product.id]?.name ?? product.name)} onClick={() => { const alreadySaved = favoriteIds.includes(product.id); setFavoriteIds((ids) => alreadySaved ? ids.filter((id) => id !== product.id) : [...ids, product.id]); setNotice(language === "AR" ? (alreadySaved ? "تمت الإزالة من المفضلة." : "تمت الإضافة إلى المفضلة.") : language === "DE" ? (alreadySaved ? "Aus deinen Favoriten entfernt." : "Zu deinen Favoriten hinzugefügt.") : language === "TR" ? (alreadySaved ? "Favorilerden kaldırıldı." : "Favorilere eklendi.") : language === "RU" ? (alreadySaved ? "Удалено из избранного." : "Добавлено в избранное.") : language === "FR" ? (alreadySaved ? "Retiré des favoris." : "Ajouté aux favoris.") : (alreadySaved ? "Removed from favorites." : "Added to favorites.")); }}>♡</button></div><div className="product-info"><span>{categoryTranslations[language]?.[product.type] ?? product.type}</span><h3>{productCopy[language]?.[product.id]?.name ?? product.name}</h3><div className="product-bottom"><b>{product.price}</b><button onClick={() => { setCartItems((items) => { const found = items.find((item) => item.id === product.id); return found ? items.map((item) => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item) : [...items, { id: product.id, quantity: 1 }]; }); setCartOpen(true); }}>{language === "AR" ? "أضيفي للحقيبة" : language === "DE" ? "In die Tasche" : language === "TR" ? "Sepete ekle" : language === "RU" ? "В корзину" : language === "FR" ? "Ajouter au panier" : "Add to bag"} <span>＋</span></button></div></div></article>)}
         </div>
         {visibleProducts.length === 0 && <p className="empty-state">{t("empty")}</p>}
         <p className="preview-disclaimer">{t("disclaimer")}</p>
