@@ -77,14 +77,17 @@ export default function HomePage() {
   const [cartItems, setCartItems] = useState<{ id: number; quantity: number }[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
-  const cartText = (key: string) => ({
-    EN: { title:"Your shopping bag", empty:"Your bag is waiting for something lovely.", continue:"Continue shopping", checkout:"Checkout coming soon", remove:"Remove", qty:"Quantity", preview:"Preview only — products, final prices and shipping are not confirmed yet.", price:"Price to be confirmed", added:"Added to your shopping bag." },
-    DE: { title:"Deine Einkaufstasche", empty:"Deine Tasche wartet auf etwas Schönes.", continue:"Weiter einkaufen", checkout:"Kasse folgt in Kürze", remove:"Entfernen", qty:"Anzahl", preview:"Nur Vorschau — Produkte, Endpreise und Versand sind noch nicht bestätigt.", price:"Preis folgt", added:"Zum Warenkorb hinzugefügt." },
-    TR: { title:"Alışveriş çantan", empty:"Çantan güzel bir seçim için seni bekliyor.", continue:"Alışverişe devam et", checkout:"Ödeme yakında açılacak", remove:"Kaldır", qty:"Adet", preview:"Yalnızca önizleme — ürünler, kesin fiyatlar ve kargo henüz onaylanmadı.", price:"Fiyat daha sonra", added:"Alışveriş çantana eklendi." },
-    RU: { title:"Твоя корзина", empty:"Корзина ждёт чего-то прекрасного.", continue:"Продолжить покупки", checkout:"Оплата скоро появится", remove:"Удалить", qty:"Количество", preview:"Только демонстрация — товары, окончательные цены и доставка ещё не подтверждены.", price:"Цена уточняется", added:"Добавлено в корзину." },
-    FR: { title:"Ton panier", empty:"Ton panier attend une jolie trouvaille.", continue:"Continuer les achats", checkout:"Paiement bientôt disponible", remove:"Retirer", qty:"Quantité", preview:"Aperçu uniquement — produits, prix définitifs et livraison ne sont pas encore confirmés.", price:"Prix à confirmer", added:"Ajouté à ton panier." },
-    AR: { title:"حقيبة التسوق", empty:"حقيبتك تنتظر اختيارًا جميلًا.", continue:"متابعة التسوق", checkout:"سيُتاح الدفع لاحقًا", remove:"حذف", qty:"العدد", preview:"معاينة فقط — لم يتم تأكيد المنتجات والأسعار النهائية والشحن بعد.", price:"السعر قيد التأكيد", added:"أُضيف المنتج إلى حقيبتك." }
-  }[language]?.[key] ?? ({title:"Your shopping bag",empty:"Your bag is waiting for something lovely.",continue:"Continue shopping",checkout:"Checkout coming soon",remove:"Remove",qty:"Quantity",preview:"Preview only — products, final prices and shipping are not confirmed yet.",price:"Price to be confirmed",added:"Added to your shopping bag."}[key] ?? key));
+  const cartText = (key: string) => {
+    const messages: Record<string, Record<string, string>> = {
+      EN: { title:"Your shopping bag", empty:"Your bag is waiting for something lovely.", continue:"Continue shopping", checkout:"Checkout coming soon", remove:"Remove", qty:"Quantity", preview:"Preview only — products, final prices and shipping are not confirmed yet.", price:"Price to be confirmed", added:"Added to your shopping bag." },
+      DE: { title:"Deine Einkaufstasche", empty:"Deine Tasche wartet auf etwas Schönes.", continue:"Weiter einkaufen", checkout:"Kasse folgt in Kürze", remove:"Entfernen", qty:"Anzahl", preview:"Nur Vorschau — Produkte, Endpreise und Versand sind noch nicht bestätigt.", price:"Preis folgt", added:"Zum Warenkorb hinzugefügt." },
+      TR: { title:"Alışveriş çantan", empty:"Çantan güzel bir seçim için seni bekliyor.", continue:"Alışverişe devam et", checkout:"Ödeme yakında açılacak", remove:"Kaldır", qty:"Adet", preview:"Yalnızca önizleme — ürünler, kesin fiyatlar ve kargo henüz onaylanmadı.", price:"Fiyat daha sonra", added:"Alışveriş çantana eklendi." },
+      RU: { title:"Твоя корзина", empty:"Корзина ждёт чего-то прекрасного.", continue:"Продолжить покупки", checkout:"Оплата скоро появится", remove:"Удалить", qty:"Количество", preview:"Только демонстрация — товары, окончательные цены и доставка ещё не подтверждены.", price:"Цена уточняется", added:"Добавлено в корзину." },
+      FR: { title:"Ton panier", empty:"Ton panier attend une jolie trouvaille.", continue:"Continuer les achats", checkout:"Paiement bientôt disponible", remove:"Retirer", qty:"Quantité", preview:"Aperçu uniquement — produits, prix définitifs et livraison ne sont pas encore confirmés.", price:"Prix à confirmer", added:"Ajouté à ton panier." },
+      AR: { title:"حقيبة التسوق", empty:"حقيبتك تنتظر اختيارًا جميلًا.", continue:"متابعة التسوق", checkout:"سيُتاح الدفع لاحقًا", remove:"حذف", qty:"العدد", preview:"معاينة فقط — لم يتم تأكيد المنتجات والأسعار النهائية والشحن بعد.", price:"السعر قيد التأكيد", added:"أُضيف المنتج إلى حقيبتك." }
+    };
+    return messages[language]?.[key] ?? messages.EN[key] ?? key;
+  };
   const [language, setLanguage] = useState("EN");
   const t = (key: string) => copy[language]?.[key] ?? copy.EN[key] ?? key;
   const isArabic = language === "AR";
