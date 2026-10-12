@@ -80,6 +80,23 @@ export default function HomePage() {
   const isArabic = language === "AR";
   const [notice, setNotice] = useState("");
   const [legalPanel, setLegalPanel] = useState<string | null>(null);
+  useEffect(() => {
+    if (!legalPanel && !notice) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setLegalPanel(null);
+        setNotice("");
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [legalPanel, notice]);
+
   const [cookiePrefs, setCookiePrefs] = useState({ necessary: true, analytics: false, marketing: false });
   useEffect(() => {
     try {
@@ -188,7 +205,7 @@ export default function HomePage() {
         </section>
       </div>}
 
-      {notice && <div className="notice-backdrop" role="presentation" onClick={() => setNotice("")}><div className="notice-dialog" role="dialog" aria-modal="true" aria-label="Store preview notice" onClick={(e) => e.stopPropagation()}><span className="notice-star">✦</span><h3>{t("noticeTitle")}</h3><p>{notice}</p><button className="primary-button" onClick={() => setNotice("")}>{t("understood")} <span>→</span></button></div></div>}
+      {notice && <div className="notice-backdrop" role="presentation" onClick={() => setNotice("")}><div className="notice-dialog" role="dialog" aria-modal="true" aria-label={language === "AR" ? "تنبيه معاينة المتجر" : language === "DE" ? "Hinweis zur Shop-Vorschau" : language === "TR" ? "Mağaza önizleme bildirimi" : language === "RU" ? "Уведомление о демонстрации магазина" : language === "FR" ? "Avis d’aperçu de la boutique" : "Store preview notice"} onClick={(e) => e.stopPropagation()}><span className="notice-star">✦</span><h3>{t("noticeTitle")}</h3><p>{notice}</p><button className="primary-button" onClick={() => setNotice("")}>{t("understood")} <span>→</span></button></div></div>}
     </main>
   );
 }
