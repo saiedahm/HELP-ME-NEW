@@ -86,7 +86,7 @@ async function getUsdToEur(): Promise<number> {
   if (!Number.isFinite(usdPerEur) || usdPerEur <= 0) throw new Error("Daily USD/EUR reference rate was unavailable");
   return usdPerEur;
 }
-async function loadCJ(): Promise<StoreProduct[]> {
+async function loadCJ(page: number, size: number): Promise<{ products: StoreProduct[]; hasMore: boolean }> {
   const apiKey = process.env.CJ_API_KEY;
   if (!apiKey) return [];
   const authResponse = await fetch("https://developers.cjdropshipping.com/api2.0/v1/authentication/getAccessToken", {
@@ -100,40 +100,50 @@ async function loadCJ(): Promise<StoreProduct[]> {
   const accessToken = authPayload.data?.accessToken;
   if (!accessToken || authPayload.success === false || authPayload.result === false) throw new Error("CJ did not issue an access token");
   const query = new URL("https://developers.cjdropshipping.com/api2.0/v1/product/listV2");
-  query.searchParams.set("page", "1");
-  query.searchParams.set("size", "100");
+  query.searchParams.set("page", String(page));
+  query.searchParams.set("size", String(size));
   query.searchParams.set("countryCode", "DE");
   const response = await fetch(query, { headers: { "CJ-Access-Token": accessToken }, cache: "no-store" });
   if (!response.ok) throw new Error("CJ catalog request failed");
-  const payload = await response.json();
+  const payload = await response.json() as { data?: { totalPages?: number; totalRecords?: number } };
   const rate = await getUsdToEur();
-  return productList(payload).map((item) => normalize(item, "CJdropshipping", rate)).filter((item): item is StoreProduct => item !== null);
+  const products = productList(payload).map((item) => normalize(item, "CJdropshipping", rate)).filter((item): item is StoreProduct => item !== null);
+  const totalPages = Number(payload.data?.totalPages ?? 1);
+  return { products, hasMore: Number.isFinite(totalPages) && totalPages > page };
 }
-async function loadBrandsGateway(): Promise<StoreProduct[]> {
+async function loadBrandsGateway(page: number, size: number): Promise<{ products: StoreProduct[]; hasMore: boolean }> {
   const endpoint = process.env.BRANDSGATEWAY_CATALOG_URL;
   const token = process.env.BRANDSGATEWAY_API_TOKEN;
-  if (!endpoint || !token) return [];
+  if (!endpoint || !token) return { products: [], hasMore: false };
   const response = await fetch(new URL(endpoint), {
     headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
     cache: "no-store"
   });
   if (!response.ok) throw new Error("BrandsGateway catalog request failed");
   const payload = await response.json();
-  return productList(payload).map((item) => normalize(item, "BrandsGateway")).filter((item): item is StoreProduct => item !== null);
+  const allProducts = productList(payload).map((item) => normalize(item, "BrandsGateway")).filter((item): item is StoreProduct => item !== null);
+  const offset = (page - 1) * size;
+  return { products: allProducts.slice(offset, offset + size), hasMore: allProducts.length > offset + size };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const errors: string[] = [];
-  const results = await Promise.allSettled([loadCJ(), loadBrandsGateway()]);
-  const cj = results[0].status === "fulfilled" ? results[0].value : (errors.push("CJdropshipping connection failed or its USD/EUR rate could not be verified"), []);
-  const bg = results[1].status === "fulfilled" ? results[1].value : (errors.push("BrandsGateway connection failed"), []);
-  const products = [...cj, ...bg].slice(0, 1000);
+  const url = new URL(request.url);
+  const page = Math.min(10, Math.max(1, Number.parseInt(url.searchParams.get("page") || "1", 10) || 1));
+  const size = 50;
+  const results = await Promise.allSettled([loadCJ(page, size), loadBrandsGateway(page, size)]);
+  const cj = results[0].status === "fulfilled" ? results[0].value : (errors.push("CJdropshipping connection failed or its USD/EUR rate could not be verified"), { products: [], hasMore: false });
+  const bg = results[1].status === "fulfilled" ? results[1].value : (errors.push("BrandsGateway connection failed"), { products: [], hasMore: false });
+  const products = [...cj.products, ...bg.products].slice(0, 1000);
   return NextResponse.json({
     products,
     count: products.length,
+    page,
+    pageSize: size * 2,
+    hasMore: page < 10 && (cj.hasMore || bg.hasMore),
     suppliers: {
-      cj: { configured: Boolean(process.env.CJ_API_KEY), imported: cj.length },
-      brandsGateway: { configured: Boolean(process.env.BRANDSGATEWAY_CATALOG_URL && process.env.BRANDSGATEWAY_API_TOKEN && process.env.BRANDSGATEWAY_CURRENCY === "EUR"), imported: bg.length }
+      cj: { configured: Boolean(process.env.CJ_API_KEY), imported: cj.products.length },
+      brandsGateway: { configured: Boolean(process.env.BRANDSGATEWAY_CATALOG_URL && process.env.BRANDSGATEWAY_API_TOKEN && process.env.BRANDSGATEWAY_CURRENCY === "EUR"), imported: bg.products.length }
     },
     errors
   }, { headers: { "Cache-Control": "no-store" } });
