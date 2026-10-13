@@ -27,7 +27,7 @@ const products = [
   { id: 9, name: "Seamless Briefs", type: "Lingerie", price: "€—", image: "https://images.unsplash.com/photo-1595341888016-a392ef81b7de?auto=format&fit=crop&w=800&q=85", tag: "SOFT & SEAMLESS" },
   { id: 10, name: "Satin Sleepwear", type: "Lingerie", price: "€—", image: "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?auto=format&fit=crop&w=800&q=85", tag: "REST IN STYLE" },
   { id: 11, name: "Classic Day Dress", type: "Fashion", price: "€—", image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=800&q=85", tag: "TIMELESS FEMININITY" },
-  { id: 12, name: "Everyday Blouse", type: "Fashion", price: "€—", image: "https://images.unsplash.com/photo-1564257577-6a6c3b0b1f4c?auto=format&fit=crop&w=800&q=85", tag: "EASY ELEGANCE" },
+  { id: 12, name: "Everyday Blouse", type: "Fashion", price: "€—", image: "/products/everyday-blouse.svg", tag: "EASY ELEGANCE" },
   { id: 13, name: "Structured Mini Bag", type: "Bags", price: "€—", image: "/products/bag-structured.svg", tag: "A MODERN CLASSIC" },
   { id: 14, name: "Layered Necklace", type: "Jewelry", price: "€—", image: "https://images.unsplash.com/photo-1611652022419-a9419f74343d?auto=format&fit=crop&w=800&q=85", tag: "THE FINISHING TOUCH" },
   { id: 15, name: "Hair Styling Tool", type: "Hair Care", price: "€—", image: "https://images.unsplash.com/photo-1522338242992-e1a54906a8da?auto=format&fit=crop&w=800&q=85", tag: "YOUR HAIR RITUAL" },
