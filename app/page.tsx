@@ -93,6 +93,9 @@ export default function HomePage() {
   const [visibleCount, setVisibleCount] = useState(24);
   const [supplierProducts, setSupplierProducts] = useState<typeof demoProducts>([]);
   const [catalogLoading, setCatalogLoading] = useState(true);
+  const [catalogLoadingMore, setCatalogLoadingMore] = useState(false);
+  const [catalogPage, setCatalogPage] = useState(1);
+  const [catalogHasMore, setCatalogHasMore] = useState(false);
   const [catalogError, setCatalogError] = useState("");
   const [cartItems, setCartItems] = useState<{ id: number; quantity: number; color?: string; size?: string; model?: string }[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
@@ -163,13 +166,17 @@ export default function HomePage() {
       try {
         const response = await fetch("/api/catalog", { cache: "no-store" });
         if (!response.ok) throw new Error("Supplier catalog is temporarily unavailable.");
-        const payload = await response.json() as { products?: unknown };
+        const payload = await response.json() as { products?: unknown; hasMore?: boolean; page?: number };
         const incoming = Array.isArray(payload.products) ? payload.products.filter((item): item is typeof demoProducts[number] => {
           if (!item || typeof item !== "object") return false;
           const product = item as Record<string, unknown>;
           return Number.isInteger(product.id) && typeof product.name === "string" && typeof product.type === "string" && typeof product.price === "string" && typeof product.image === "string" && typeof product.tag === "string";
         }) : [];
-        if (!cancelled) setSupplierProducts(incoming.slice(0, 1000));
+        if (!cancelled) {
+          setSupplierProducts(incoming.slice(0, 1000));
+          setCatalogHasMore(Boolean(payload.hasMore));
+          setCatalogPage(Number(payload.page) || 1);
+        }
       } catch {
         if (!cancelled) setCatalogError("Supplier products will appear here after the supplier connection is configured.");
       } finally {
@@ -235,6 +242,34 @@ export default function HomePage() {
   });
   const visibleProducts = useMemo(() => supplierProducts.filter((p) => (!showFavoritesOnly || favoriteIds.includes(p.id)) && (activeCategory === "All" || p.type === activeCategory) && ((productCopy[language]?.[p.id]?.name ?? p.name) + " " + p.name + " " + (categoryTranslations[language]?.[p.type] ?? p.type)).toLowerCase().includes(search.toLowerCase())), [activeCategory, search, language, showFavoritesOnly, favoriteIds]);
   const pagedProducts = visibleProducts.slice(0, visibleCount);
+  const loadMoreProducts = async () => {
+    if (visibleCount < visibleProducts.length) {
+      setVisibleCount((count) => Math.min(count + 24, visibleProducts.length));
+      return;
+    }
+    if (!catalogHasMore || catalogLoadingMore || supplierProducts.length >= 1000) return;
+    setCatalogLoadingMore(true);
+    setCatalogError("");
+    try {
+      const nextPage = catalogPage + 1;
+      const response = await fetch(`/api/catalog?page=${nextPage}`, { cache: "no-store" });
+      if (!response.ok) throw new Error("Could not load the next supplier page.");
+      const payload = await response.json() as { products?: unknown; hasMore?: boolean; page?: number };
+      const incoming = Array.isArray(payload.products) ? payload.products.filter((item): item is typeof demoProducts[number] => {
+        if (!item || typeof item !== "object") return false;
+        const product = item as Record<string, unknown>;
+        return Number.isInteger(product.id) && typeof product.name === "string" && typeof product.type === "string" && typeof product.price === "string" && typeof product.image === "string" && typeof product.tag === "string";
+      }) : [];
+      setSupplierProducts((current) => [...current, ...incoming.filter((product) => !current.some((existing) => existing.id === product.id))].slice(0, 1000));
+      setCatalogPage(Number(payload.page) || nextPage);
+      setCatalogHasMore(Boolean(payload.hasMore));
+      setVisibleCount((count) => Math.min(count + 24, 1000));
+    } catch {
+      setCatalogError(language === "AR" ? "تعذر تحميل الصفحة التالية من الموردين. حاول مرة أخرى." : "Could not load the next supplier page. Please try again.");
+    } finally {
+      setCatalogLoadingMore(false);
+    }
+  };
 
   return (
     <main className="storefront" id="top" lang={language.toLowerCase()} dir={isArabic ? "rtl" : "ltr"}>
@@ -309,7 +344,7 @@ export default function HomePage() {
         <div className="product-grid">
           {pagedProducts.map((product) => <article className="product-card" key={product.id}><div className="product-image-wrap"><img src={product.image} alt={productCopy[language]?.[product.id]?.name ?? product.name} className="product-image" loading="lazy" onError={(event) => { event.currentTarget.style.visibility = "hidden"; }} /><span className="product-tag">{productCopy[language]?.[product.id]?.tag ?? product.tag}</span><button className={favoriteIds.includes(product.id) ? "favorite-button is-favorite" : "favorite-button"} aria-pressed={favoriteIds.includes(product.id)} aria-label={(language === "AR" ? (favoriteIds.includes(product.id) ? "إزالة من المفضلة: " : "حفظ في المفضلة: ") : language === "DE" ? (favoriteIds.includes(product.id) ? "Aus Favoriten entfernen: " : "Zu Favoriten hinzufügen: ") : language === "TR" ? (favoriteIds.includes(product.id) ? "Favorilerden çıkar: " : "Favorilere ekle: ") : language === "RU" ? (favoriteIds.includes(product.id) ? "Убрать из избранного: " : "Добавить в избранное: ") : language === "FR" ? (favoriteIds.includes(product.id) ? "Retirer des favoris : " : "Ajouter aux favoris : ") : (favoriteIds.includes(product.id) ? "Remove from favorites: " : "Add to favorites: ")) + (productCopy[language]?.[product.id]?.name ?? product.name)} onClick={() => { const alreadySaved = favoriteIds.includes(product.id); setFavoriteIds((ids) => alreadySaved ? ids.filter((id) => id !== product.id) : [...ids, product.id]); setNotice(language === "AR" ? (alreadySaved ? "تمت الإزالة من المفضلة." : "تمت الإضافة إلى المفضلة.") : language === "DE" ? (alreadySaved ? "Aus deinen Favoriten entfernt." : "Zu deinen Favoriten hinzugefügt.") : language === "TR" ? (alreadySaved ? "Favorilerden kaldırıldı." : "Favorilere eklendi.") : language === "RU" ? (alreadySaved ? "Удалено из избранного." : "Добавлено в избранное.") : language === "FR" ? (alreadySaved ? "Retiré des favoris." : "Ajouté aux favoris.") : (alreadySaved ? "Removed from favorites." : "Added to favorites.")); }}>♡</button></div><div className="product-info"><span>{categoryTranslations[language]?.[product.type] ?? product.type}</span><h3>{productCopy[language]?.[product.id]?.name ?? product.name}</h3><button className="product-details-button" onClick={() => { setSelectedProductId(product.id); setSelectedColor(productOptions(product).colors[0]); setSelectedSize(productOptions(product).sizes[0]); setSelectedModel(productOptions(product).models[0]); }}>{language === "AR" ? "التفاصيل والمقاسات" : language === "DE" ? "Details & Größen" : language === "TR" ? "Detaylar ve bedenler" : language === "RU" ? "Детали и размеры" : language === "FR" ? "Détails et tailles" : "Details & sizes"} ↗</button><div className="product-bottom"><b>{product.price}</b><button onClick={() => { setCartItems((items) => { const found = items.find((item) => item.id === product.id); return found ? items.map((item) => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item) : [...items, { id: product.id, quantity: 1 }]; }); setCartOpen(true); }}>{language === "AR" ? "أضيفي للحقيبة" : language === "DE" ? "In die Tasche" : language === "TR" ? "Sepete ekle" : language === "RU" ? "В корзину" : language === "FR" ? "Ajouter au panier" : "Add to bag"} <span>＋</span></button></div></div></article>)}
         </div>
-        {visibleCount < visibleProducts.length && <div className="product-load-more-wrap"><button type="button" className="product-load-more" onClick={() => setVisibleCount((count) => Math.min(count + 24, visibleProducts.length))}>{language === "AR" ? "عرض المزيد من المنتجات" : language === "DE" ? "Weitere Produkte anzeigen" : language === "TR" ? "Daha fazla ürün göster" : language === "RU" ? "Показать больше товаров" : language === "FR" ? "Afficher plus de produits" : "Load more products"} <span>＋</span></button><p>{Math.min(visibleCount, visibleProducts.length)} / {visibleProducts.length}</p></div>}
+        {(visibleCount < visibleProducts.length || catalogHasMore) && visibleProducts.length > 0 && <div className="product-load-more-wrap"><button type="button" className="product-load-more" disabled={catalogLoadingMore} onClick={() => void loadMoreProducts()}>{catalogLoadingMore ? (language === "AR" ? "جارٍ التحميل…" : "Loading…") : language === "AR" ? "عرض المزيد من المنتجات" : language === "DE" ? "Weitere Produkte anzeigen" : language === "TR" ? "Daha fazla ürün göster" : language === "RU" ? "Показать больше товаров" : language === "FR" ? "Afficher plus de produits" : "Load more products"} <span>＋</span></button><p>{Math.min(visibleCount, visibleProducts.length)} / {visibleProducts.length}{catalogHasMore ? " +" : ""}</p></div>}
         {visibleProducts.length === 0 && search.trim() === "" && !showFavoritesOnly && <div className="supplier-empty-grid" aria-label={language === "AR" ? "أماكن المنتجات بانتظار الربط الآلي بالموردين" : "Product slots awaiting automatic supplier connection"}>{Array.from({ length: 24 }, (_, index) => <article className="product-card product-placeholder" key={`supplier-slot-${index}`} aria-hidden="true"><div className="product-image-wrap" /><div className="product-info"><span className="placeholder-line short" /><span className="placeholder-line wide" /><span className="placeholder-line medium" /><div className="placeholder-bottom"><span className="placeholder-line short" /><span className="placeholder-button" /></div></div></article>)}</div>}
         {visibleProducts.length === 0 && (search.trim() !== "" || showFavoritesOnly) && <p className="empty-state">{t("empty")}</p>}
         <p className="preview-disclaimer">{t("disclaimer")}</p>
