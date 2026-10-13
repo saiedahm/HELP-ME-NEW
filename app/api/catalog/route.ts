@@ -99,6 +99,7 @@ async function loadCJ(page: number, size: number): Promise<{ products: StoreProd
   const authPayload = await authResponse.json() as { data?: { accessToken?: string }; success?: boolean; result?: boolean };
   const accessToken = authPayload.data?.accessToken;
   if (!accessToken || authPayload.success === false || authPayload.result === false) throw new Error("CJ did not issue an access token");
+  await new Promise((resolve) => setTimeout(resolve, 1050));
   const query = new URL("https://developers.cjdropshipping.com/api2.0/v1/product/listV2");
   query.searchParams.set("page", String(page));
   query.searchParams.set("size", String(size));
@@ -130,7 +131,7 @@ export async function GET(request: Request) {
   const errors: string[] = [];
   const url = new URL(request.url);
   const page = Math.min(10, Math.max(1, Number.parseInt(url.searchParams.get("page") || "1", 10) || 1));
-  const size = 50;
+  const size = 100;
   const results = await Promise.allSettled([loadCJ(page, size), loadBrandsGateway(page, size)]);
   const cj = results[0].status === "fulfilled" ? results[0].value : (errors.push("CJdropshipping connection failed or its USD/EUR rate could not be verified"), { products: [], hasMore: false });
   const bg = results[1].status === "fulfilled" ? results[1].value : (errors.push("BrandsGateway connection failed"), { products: [], hasMore: false });
