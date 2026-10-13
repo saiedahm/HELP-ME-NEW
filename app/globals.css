@@ -157,3 +157,17 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .product-load-more span{font-size:17px;}
 .product-load-more-wrap p{margin:0;color:var(--muted);font-size:10px;}
 @media(max-width:760px){.product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}}
+
+
+/* Empty product slots stay blank until real supplier catalog sync. */
+.supplier-empty-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;}
+.product-placeholder{pointer-events:none;}
+.product-placeholder .product-image-wrap{aspect-ratio:2/3;background:transparent;border:1px solid rgba(176,139,87,.18);}
+.product-placeholder .product-info{padding-top:14px;}
+.placeholder-line{display:block;height:7px;background:rgba(176,139,87,.10);margin:0 0 10px;border-radius:2px;}
+.placeholder-line.short{width:28%;}
+.placeholder-line.medium{width:54%;}
+.placeholder-line.wide{width:78%;height:9px;}
+.placeholder-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:18px;}
+.placeholder-button{display:block;width:42%;height:28px;border:1px solid rgba(176,139,87,.18);}
+@media(max-width:760px){.supplier-empty-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}}
