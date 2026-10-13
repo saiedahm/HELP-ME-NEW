@@ -88,7 +88,7 @@ async function getUsdToEur(): Promise<number> {
 }
 async function loadCJ(page: number, size: number): Promise<{ products: StoreProduct[]; hasMore: boolean }> {
   const apiKey = process.env.CJ_API_KEY;
-  if (!apiKey) return [];
+  if (!apiKey) return { products: [], hasMore: false };
   const authResponse = await fetch("https://developers.cjdropshipping.com/api2.0/v1/authentication/getAccessToken", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
