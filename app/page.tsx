@@ -100,6 +100,9 @@ export default function HomePage() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [search, setSearch] = useState("");
   const [visibleCount, setVisibleCount] = useState(24);
+  const [supplierProducts, setSupplierProducts] = useState<typeof demoProducts>([]);
+  const [catalogLoading, setCatalogLoading] = useState(true);
+  const [catalogError, setCatalogError] = useState("");
   const [cartItems, setCartItems] = useState<{ id: number; quantity: number; color?: string; size?: string; model?: string }[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
   const [selectedColor, setSelectedColor] = useState("Black");
@@ -118,7 +121,7 @@ export default function HomePage() {
       if (savedFavorites) {
         const parsed: unknown = JSON.parse(savedFavorites);
         if (Array.isArray(parsed)) {
-          setFavoriteIds(parsed.filter((id): id is number => Number.isInteger(id) && products.some((product) => product.id === id)));
+          setFavoriteIds(parsed.filter((id): id is number => Number.isInteger(id) && true));
         }
       }
     } catch {
@@ -161,6 +164,31 @@ export default function HomePage() {
       // The bag still works for the current visit if storage is unavailable.
     }
   }, [cartItems, cartHydrated]);
+  useEffect(() => {
+    let cancelled = false;
+    async function loadSupplierCatalog() {
+      setCatalogLoading(true);
+      setCatalogError("");
+      try {
+        const response = await fetch("/api/catalog", { cache: "no-store" });
+        if (!response.ok) throw new Error("Supplier catalog is temporarily unavailable.");
+        const payload = await response.json() as { products?: unknown };
+        const incoming = Array.isArray(payload.products) ? payload.products.filter((item): item is typeof demoProducts[number] => {
+          if (!item || typeof item !== "object") return false;
+          const product = item as Record<string, unknown>;
+          return Number.isInteger(product.id) && typeof product.name === "string" && typeof product.type === "string" && typeof product.price === "string" && typeof product.image === "string" && typeof product.tag === "string";
+        }) : [];
+        if (!cancelled) setSupplierProducts(incoming.slice(0, 1000));
+      } catch {
+        if (!cancelled) setCatalogError("Supplier products will appear here after the supplier connection is configured.");
+      } finally {
+        if (!cancelled) setCatalogLoading(false);
+      }
+    }
+    void loadSupplierCatalog();
+    return () => { cancelled = true; };
+  }, []);
+
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
   const cartText = (key: string) => {
     const messages: Record<string, Record<string, string>> = {
@@ -208,13 +236,13 @@ export default function HomePage() {
       // Keep safe defaults if browser storage is unavailable.
     }
   }, []);
-  const selectedProduct = products.find((product) => product.id === selectedProductId) ?? null;
+  const selectedProduct = supplierProducts.find((product) => product.id === selectedProductId) ?? null;
   const productOptions = (product: (typeof products)[number]) => ({
     colors: product.type === "Lingerie" || product.type === "Fashion" ? ["Black", "White", "Beige", "Rose", "Red"] : product.type === "Bags" ? ["Black", "Beige", "Brown", "Rose"] : product.type === "Jewelry" || product.type === "Watches" ? ["Gold", "Silver", "Rose gold"] : ["Default", "Black", "White"],
     sizes: product.type === "Lingerie" ? ["XS", "S", "M", "L", "XL", "XXL"] : product.type === "Fashion" ? ["XS", "S", "M", "L", "XL", "XXL"] : product.type === "Bags" ? ["Small", "Medium", "Large"] : ["One size"],
     models: product.type === "Lingerie" ? ["Everyday", "Seamless", "Lace", "Support"] : product.type === "Fashion" ? ["Classic", "Casual", "Evening"] : ["Classic", "Modern", "Minimal"]
   });
-  const visibleProducts = useMemo(() => products.filter((p) => (!showFavoritesOnly || favoriteIds.includes(p.id)) && (activeCategory === "All" || p.type === activeCategory) && ((productCopy[language]?.[p.id]?.name ?? p.name) + " " + p.name + " " + (categoryTranslations[language]?.[p.type] ?? p.type)).toLowerCase().includes(search.toLowerCase())), [activeCategory, search, language, showFavoritesOnly, favoriteIds]);
+  const visibleProducts = useMemo(() => supplierProducts.filter((p) => (!showFavoritesOnly || favoriteIds.includes(p.id)) && (activeCategory === "All" || p.type === activeCategory) && ((productCopy[language]?.[p.id]?.name ?? p.name) + " " + p.name + " " + (categoryTranslations[language]?.[p.type] ?? p.type)).toLowerCase().includes(search.toLowerCase())), [activeCategory, search, language, showFavoritesOnly, favoriteIds]);
   const pagedProducts = visibleProducts.slice(0, visibleCount);
 
   return (
@@ -285,6 +313,8 @@ export default function HomePage() {
       <section className="edit-section section-pad" id="edit">
         <div className="section-heading-row"><div><span className="eyebrow">{t("curated")}</span><h2>{t("lovely")} <em>{t("chosen")}</em></h2></div><a href="#categories" className="text-button">{t("allCategories")}</a></div>
         <div className="product-controls"><div className="filter-chips"><button className={showFavoritesOnly ? "filter-chip active" : "filter-chip"} onClick={() => setShowFavoritesOnly((value) => !value)}>{language === "AR" ? "المفضلة ♡" : language === "DE" ? "Favoriten ♡" : language === "TR" ? "Favoriler ♡" : language === "RU" ? "Избранное ♡" : language === "FR" ? "Favoris ♡" : "Favorites ♡"} ({favoriteIds.length})</button><button className={activeCategory === "All" && !showFavoritesOnly ? "filter-chip active" : "filter-chip"} onClick={() => { setActiveCategory("All"); setShowFavoritesOnly(false); }}>{categoryTranslations[language]?.All ?? t("all")}</button>{["Beauty","Fashion","Bags","Jewelry","Lingerie","Hair Care","Technology","Gifts","Watches","Body Care"].map((cat) => <button key={cat} className={activeCategory === cat ? "filter-chip active" : "filter-chip"} onClick={() => setActiveCategory(cat)}>{categoryTranslations[language]?.[cat] ?? cat}</button>)}</div><input id="product-search" className="product-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("search")} aria-label={language === "AR" ? "البحث في المنتجات التجريبية" : language === "DE" ? "Vorschauprodukte durchsuchen" : language === "TR" ? "Örnek ürünlerde ara" : language === "RU" ? "Поиск демонстрационных товаров" : language === "FR" ? "Rechercher dans les produits de démonstration" : "Search the product preview"} /></div>
+        {catalogLoading && <p className="catalog-status" role="status">{language === "AR" ? "جارٍ التحقق من كتالوج الموردين…" : language === "DE" ? "Lieferantenkatalog wird geprüft…" : "Checking supplier catalog…"}</p>}
+        {!catalogLoading && catalogError && <p className="catalog-status" role="status">{language === "AR" ? "ستظهر البضاعة الحقيقية بعد إعداد بيانات الربط الآلي للموردين." : catalogError}</p>}
         <div className="product-grid">
           {pagedProducts.map((product) => <article className="product-card" key={product.id}><div className="product-image-wrap"><img src={product.image} alt={productCopy[language]?.[product.id]?.name ?? product.name} className="product-image" loading="lazy" onError={(event) => { const image = event.currentTarget; if (image.dataset.fallbackApplied !== "true") { image.dataset.fallbackApplied = "true"; image.src = productFallback(product.type); } }} /><span className="product-tag">{productCopy[language]?.[product.id]?.tag ?? product.tag}</span><button className={favoriteIds.includes(product.id) ? "favorite-button is-favorite" : "favorite-button"} aria-pressed={favoriteIds.includes(product.id)} aria-label={(language === "AR" ? (favoriteIds.includes(product.id) ? "إزالة من المفضلة: " : "حفظ في المفضلة: ") : language === "DE" ? (favoriteIds.includes(product.id) ? "Aus Favoriten entfernen: " : "Zu Favoriten hinzufügen: ") : language === "TR" ? (favoriteIds.includes(product.id) ? "Favorilerden çıkar: " : "Favorilere ekle: ") : language === "RU" ? (favoriteIds.includes(product.id) ? "Убрать из избранного: " : "Добавить в избранное: ") : language === "FR" ? (favoriteIds.includes(product.id) ? "Retirer des favoris : " : "Ajouter aux favoris : ") : (favoriteIds.includes(product.id) ? "Remove from favorites: " : "Add to favorites: ")) + (productCopy[language]?.[product.id]?.name ?? product.name)} onClick={() => { const alreadySaved = favoriteIds.includes(product.id); setFavoriteIds((ids) => alreadySaved ? ids.filter((id) => id !== product.id) : [...ids, product.id]); setNotice(language === "AR" ? (alreadySaved ? "تمت الإزالة من المفضلة." : "تمت الإضافة إلى المفضلة.") : language === "DE" ? (alreadySaved ? "Aus deinen Favoriten entfernt." : "Zu deinen Favoriten hinzugefügt.") : language === "TR" ? (alreadySaved ? "Favorilerden kaldırıldı." : "Favorilere eklendi.") : language === "RU" ? (alreadySaved ? "Удалено из избранного." : "Добавлено в избранное.") : language === "FR" ? (alreadySaved ? "Retiré des favoris." : "Ajouté aux favoris.") : (alreadySaved ? "Removed from favorites." : "Added to favorites.")); }}>♡</button></div><div className="product-info"><span>{categoryTranslations[language]?.[product.type] ?? product.type}</span><h3>{productCopy[language]?.[product.id]?.name ?? product.name}</h3><button className="product-details-button" onClick={() => { setSelectedProductId(product.id); setSelectedColor(productOptions(product).colors[0]); setSelectedSize(productOptions(product).sizes[0]); setSelectedModel(productOptions(product).models[0]); }}>{language === "AR" ? "التفاصيل والمقاسات" : language === "DE" ? "Details & Größen" : language === "TR" ? "Detaylar ve bedenler" : language === "RU" ? "Детали и размеры" : language === "FR" ? "Détails et tailles" : "Details & sizes"} ↗</button><div className="product-bottom"><b>{product.price}</b><button onClick={() => { setCartItems((items) => { const found = items.find((item) => item.id === product.id); return found ? items.map((item) => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item) : [...items, { id: product.id, quantity: 1 }]; }); setCartOpen(true); }}>{language === "AR" ? "أضيفي للحقيبة" : language === "DE" ? "In die Tasche" : language === "TR" ? "Sepete ekle" : language === "RU" ? "В корзину" : language === "FR" ? "Ajouter au panier" : "Add to bag"} <span>＋</span></button></div></div></article>)}
         </div>
@@ -320,7 +350,7 @@ export default function HomePage() {
           <div className="cart-head"><div><span className="cart-kicker">HELP-ME · PRIVATE EDIT</span><h2 id="cart-title">{cartText("title")}</h2></div><button className="cart-close" aria-label={legalCopy[language]?.close ?? "Close"} onClick={() => setCartOpen(false)}>×</button></div>
           <div className="cart-ornament" aria-hidden="true">✦ ─ ❦ ─ ✦</div>
           {cartItems.length === 0 ? <div className="cart-empty"><span>♧</span><p>{cartText("empty")}</p><button className="primary-button" onClick={() => { setCartOpen(false); document.getElementById("products")?.scrollIntoView({ behavior: "smooth" }); }}>{cartText("continue")} <span>→</span></button></div> : <div className="cart-lines">
-            {cartItems.map((item, index) => { const product = products.find((entry) => entry.id === item.id); if (!product) return null; return <article className="cart-line" key={`${item.id}-${item.color ?? ""}-${item.size ?? ""}-${item.model ?? ""}-${index}`}><img src={product.image} alt="" onError={(event) => { event.currentTarget.src = productFallback(product.type); }} /><div className="cart-line-info"><span>{categoryTranslations[language]?.[product.type] ?? product.type}</span><h3>{productCopy[language]?.[product.id]?.name ?? product.name}</h3>{(item.color || item.size || item.model) && <small>{[item.color, item.size, item.model].filter(Boolean).join(" · ")}</small>}<small>{cartText("price")}</small><div className="cart-line-actions"><div className="cart-quantity"><button aria-label={language === "AR" ? "تقليل العدد" : language === "DE" ? "Anzahl verringern" : language === "TR" ? "Adedi azalt" : language === "RU" ? "Уменьшить количество" : language === "FR" ? "Diminuer la quantité" : "Decrease quantity"} onClick={() => setCartItems((items) => items.flatMap((entry) => entry.id !== item.id || entry.color !== item.color || entry.size !== item.size || entry.model !== item.model ? [entry] : entry.quantity > 1 ? [{ ...entry, quantity: entry.quantity - 1 }] : []))}>−</button><span>{item.quantity}</span><button aria-label={language === "AR" ? "زيادة العدد" : language === "DE" ? "Anzahl erhöhen" : language === "TR" ? "Adedi artır" : language === "RU" ? "Увеличить количество" : language === "FR" ? "Augmenter la quantité" : "Increase quantity"} onClick={() => setCartItems((items) => items.map((entry) => entry.id === item.id && entry.color === item.color && entry.size === item.size && entry.model === item.model ? { ...entry, quantity: entry.quantity + 1 } : entry))}>＋</button></div><button className="cart-remove" aria-label={(language === "AR" ? "حذف " : language === "DE" ? "Entfernen: " : language === "TR" ? "Kaldır: " : language === "RU" ? "Удалить: " : language === "FR" ? "Retirer : " : "Remove ") + (productCopy[language]?.[product.id]?.name ?? product.name)} onClick={() => setCartItems((items) => items.filter((entry) => entry.id !== item.id || entry.color !== item.color || entry.size !== item.size || entry.model !== item.model))}>{cartText("remove")}</button></div></div></article>; })}
+            {cartItems.map((item, index) => { const product = supplierProducts.find((entry) => entry.id === item.id); if (!product) return null; return <article className="cart-line" key={`${item.id}-${item.color ?? ""}-${item.size ?? ""}-${item.model ?? ""}-${index}`}><img src={product.image} alt="" onError={(event) => { event.currentTarget.src = productFallback(product.type); }} /><div className="cart-line-info"><span>{categoryTranslations[language]?.[product.type] ?? product.type}</span><h3>{productCopy[language]?.[product.id]?.name ?? product.name}</h3>{(item.color || item.size || item.model) && <small>{[item.color, item.size, item.model].filter(Boolean).join(" · ")}</small>}<small>{cartText("price")}</small><div className="cart-line-actions"><div className="cart-quantity"><button aria-label={language === "AR" ? "تقليل العدد" : language === "DE" ? "Anzahl verringern" : language === "TR" ? "Adedi azalt" : language === "RU" ? "Уменьшить количество" : language === "FR" ? "Diminuer la quantité" : "Decrease quantity"} onClick={() => setCartItems((items) => items.flatMap((entry) => entry.id !== item.id || entry.color !== item.color || entry.size !== item.size || entry.model !== item.model ? [entry] : entry.quantity > 1 ? [{ ...entry, quantity: entry.quantity - 1 }] : []))}>−</button><span>{item.quantity}</span><button aria-label={language === "AR" ? "زيادة العدد" : language === "DE" ? "Anzahl erhöhen" : language === "TR" ? "Adedi artır" : language === "RU" ? "Увеличить количество" : language === "FR" ? "Augmenter la quantité" : "Increase quantity"} onClick={() => setCartItems((items) => items.map((entry) => entry.id === item.id && entry.color === item.color && entry.size === item.size && entry.model === item.model ? { ...entry, quantity: entry.quantity + 1 } : entry))}>＋</button></div><button className="cart-remove" aria-label={(language === "AR" ? "حذف " : language === "DE" ? "Entfernen: " : language === "TR" ? "Kaldır: " : language === "RU" ? "Удалить: " : language === "FR" ? "Retirer : " : "Remove ") + (productCopy[language]?.[product.id]?.name ?? product.name)} onClick={() => setCartItems((items) => items.filter((entry) => entry.id !== item.id || entry.color !== item.color || entry.size !== item.size || entry.model !== item.model))}>{cartText("remove")}</button></div></div></article>; })}
           </div>}
           <div className="cart-foot"><p>{cartText("preview")}</p><button className="primary-button cart-checkout" disabled={cartItems.length === 0} onClick={() => { if (cartItems.length > 0) { setCartOpen(false); setCheckoutOpen(true); } }}>{language === "AR" ? "اشتري فورًا" : language === "DE" ? "Jetzt kaufen" : language === "TR" ? "Hemen satın al" : language === "RU" ? "Купить сейчас" : language === "FR" ? "Acheter maintenant" : "Buy now"} <span>✦</span></button><button className="cart-continue" onClick={() => setCartOpen(false)}>{cartText("continue")}</button></div>
         </aside>
