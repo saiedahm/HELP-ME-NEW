@@ -9,6 +9,7 @@ Set these as server-side secrets in the deployment environment (never in client-
 - `CJ_API_KEY`: API key from the CJdropshipping developer/API authorization page. The server obtains and keeps the CJ access token server-side.
 - `BRANDSGATEWAY_CATALOG_URL`: the exact REST/JSON catalog endpoint supplied by BrandsGateway for the account.
 - `BRANDSGATEWAY_API_TOKEN`: the API token supplied by BrandsGateway for that endpoint.
+- `BRANDSGATEWAY_CURRENCY=EUR`: set only after confirming that the configured BrandsGateway endpoint returns product costs in euros. Products with unconfirmed currency are excluded.
 
 The BrandsGateway endpoint and token format must match the credentials and API contract issued for the actual account. Do not guess a URL or place the secret in the browser.
 
