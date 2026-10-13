@@ -105,6 +105,8 @@ export default function HomePage() {
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("card");
+  const [checkoutProcessing, setCheckoutProcessing] = useState(false);
+  const [checkoutError, setCheckoutError] = useState("");
   const [cartHydrated, setCartHydrated] = useState(false);
   const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
@@ -187,6 +189,28 @@ export default function HomePage() {
     return () => { cancelled = true; };
   }, []);
 
+  const startStripeTestCheckout = async () => {
+    if (selectedPaymentMethod !== "stripe") {
+      setCheckoutError(language === "AR" ? "المتاح حاليًا هو اختبار Stripe فقط. PayPal والتحويل البنكي لم يُربطا بعد." : "Only Stripe test checkout is being prepared. PayPal and bank transfer are not connected yet.");
+      return;
+    }
+    if (!cartItems.length || checkoutProcessing) return;
+    setCheckoutProcessing(true);
+    setCheckoutError("");
+    try {
+      const response = await fetch("/api/store/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: cartItems.map(({ id, quantity }) => ({ id, quantity })) })
+      });
+      const result = await response.json() as { url?: string; error?: string };
+      if (!response.ok || !result.url) throw new Error(result.error || "Stripe test checkout could not be started.");
+      window.location.assign(result.url);
+    } catch (error) {
+      setCheckoutError(error instanceof Error ? error.message : "Checkout could not be started. Please try again.");
+      setCheckoutProcessing(false);
+    }
+  };
   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
   const cartText = (key: string) => {
     const messages: Record<string, Record<string, string>> = {
@@ -397,8 +421,9 @@ export default function HomePage() {
             <button type="button" role="radio" aria-checked={selectedPaymentMethod === "paypal"} className={selectedPaymentMethod === "paypal" ? "payment-method selected" : "payment-method"} onClick={() => setSelectedPaymentMethod("paypal")}><span className="payment-icon payment-paypal">P</span><span><strong>PayPal</strong><small>{language === "AR" ? "سيتم ربط PayPal بعد إعداد حساب التاجر" : language === "DE" ? "PayPal wird nach Einrichtung des Händlerkontos verbunden" : language === "TR" ? "PayPal, satıcı hesabı ayarlandıktan sonra bağlanacak" : language === "RU" ? "PayPal подключим после настройки аккаунта продавца" : language === "FR" ? "PayPal sera connecté après la configuration du compte marchand" : "Will be connected after merchant account setup"}</small></span><span className="payment-radio">{selectedPaymentMethod === "paypal" ? "●" : "○"}</span></button>
             <button type="button" role="radio" aria-checked={selectedPaymentMethod === "stripe"} className={selectedPaymentMethod === "stripe" ? "payment-method selected" : "payment-method"} onClick={() => setSelectedPaymentMethod("stripe")}><span className="payment-icon payment-stripe">S</span><span><strong>Stripe</strong><small>{language === "AR" ? "بوابة الدفع ستُربط لاحقًا" : language === "DE" ? "Zahlungsanbieter wird später verbunden" : language === "TR" ? "Ödeme sağlayıcısı daha sonra bağlanır" : language === "RU" ? "Платёжный сервис подключим позже" : language === "FR" ? "Le prestataire sera connecté ultérieurement" : "Payment provider will be connected later"}</small></span><span className="payment-radio">{selectedPaymentMethod === "stripe" ? "●" : "○"}</span></button>
           </div>
+          {checkoutError && <p className="catalog-status" role="alert">{checkoutError}</p>}
           <div className="checkout-preview-warning"><span>✦</span><p>{language === "AR" ? "وضع المعاينة التجريبية: الدفع والطلبات غير مفعّلين. لن يتم إرسال طلب شراء أو تحصيل أي مبلغ." : language === "DE" ? "Testmodus: Zahlung und Bestellungen sind deaktiviert. Es wird keine Bestellung übermittelt und kein Geld eingezogen." : language === "TR" ? "Deneme modu: ödeme ve siparişler devre dışıdır. Sipariş gönderilmez ve ödeme alınmaz." : language === "RU" ? "Тестовый режим: оплата и заказы отключены. Заказ не отправляется, деньги не списываются." : language === "FR" ? "Mode test : paiement et commandes désactivés. Aucune commande ni aucun prélèvement." : "Trial mode: checkout and orders are disabled. No order will be submitted and no money will be collected."}</p></div>
-          <button className="checkout-confirm-preview" type="button" onClick={() => setCheckoutOpen(false)}>{language === "AR" ? "العودة إلى المتجر" : language === "DE" ? "Zurück zum Shop" : language === "TR" ? "Mağazaya dön" : language === "RU" ? "Вернуться в магазин" : language === "FR" ? "Retour à la boutique" : "Return to store"} <span>→</span></button>
+          <button className="checkout-confirm-preview" type="button" disabled={checkoutProcessing || cartItems.length === 0} onClick={() => void startStripeTestCheckout()}>{checkoutProcessing ? (language === "AR" ? "جارٍ فتح الدفع التجريبي…" : "Opening test checkout…") : language === "AR" ? "متابعة إلى Stripe (اختبار)" : language === "DE" ? "Weiter zu Stripe (Test)" : language === "TR" ? "Stripe testine devam et" : language === "RU" ? "Перейти к тесту Stripe" : language === "FR" ? "Continuer vers Stripe (test)" : "Continue to Stripe (test)"} <span>→</span></button><button className="cart-continue" type="button" onClick={() => setCheckoutOpen(false)}>{language === "AR" ? "العودة إلى المتجر" : language === "DE" ? "Zurück zum Shop" : language === "TR" ? "Mağazaya dön" : language === "RU" ? "Вернуться в магазин" : language === "FR" ? "Retour à la boutique" : "Return to store"}</button>
         </section>
       </div>}
 
