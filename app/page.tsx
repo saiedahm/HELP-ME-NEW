@@ -15,15 +15,6 @@ const categories = [
   { name: "Body Care", ar: "العناية بالجسم", icon: "❋", note: "Your own moment of calm" },
 ];
 
-function productFallback(type: string) {
-  if (type === "Beauty" || type === "Hair Care" || type === "Body Care") return "/products/beauty-edit.svg";
-  if (type === "Fashion" || type === "Lingerie") return "/products/fashion-edit.svg";
-  if (type === "Bags") return "/products/bag-structured.svg";
-  if (type === "Jewelry" || type === "Watches") return "/products/jewelry-edit.svg";
-  if (type === "Technology") return "/products/technology-edit.svg";
-  return "/products/gifts-edit.svg";
-}
-
 const demoProducts = [
   { id: 1, name: "Rose Veil Eau de Parfum", type: "Beauty", price: "€—", image: "/products/beauty-edit.svg", tag: "THE SIGNATURE EDIT" },
   { id: 2, name: "The Everyday Shoulder Bag", type: "Bags", price: "€—", image: "/products/bag-shoulder.svg", tag: "TIMELESS STYLE" },
@@ -379,7 +370,7 @@ export default function HomePage() {
       {selectedProduct && <div className="ornate-backdrop" role="presentation" onClick={() => setSelectedProductId(null)}>
         <section className="product-detail-dialog" role="dialog" aria-modal="true" aria-label={language === "AR" ? "تفاصيل المنتج" : "Product details"} dir={isArabic ? "rtl" : "ltr"} onClick={(e) => e.stopPropagation()}>
           <button className="product-detail-close" aria-label="Close" onClick={() => setSelectedProductId(null)}>×</button>
-          <img className="product-detail-image" src={selectedProduct.image} alt={selectedProduct.name} onError={(event) => { event.currentTarget.src = productFallback(selectedProduct.type); }} />
+          <img className="product-detail-image" src={selectedProduct.image} alt={selectedProduct.name} onError={(event) => { event.currentTarget.style.visibility = "hidden"; }} />
           <div className="product-detail-copy">
             <span className="eyebrow">{categoryTranslations[language]?.[selectedProduct.type] ?? selectedProduct.type}</span>
             <h2>{productCopy[language]?.[selectedProduct.id]?.name ?? selectedProduct.name}</h2>
