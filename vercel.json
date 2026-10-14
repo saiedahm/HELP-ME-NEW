@@ -1,8 +1,8 @@
-<escape>{
+{
   "crons": [
     {
       "path": "/api/cron/sync-products",
       "schedule": "0 3 * * *"
     }
   ]
-}</escape>
+}
