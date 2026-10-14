@@ -136,3 +136,25 @@ model Subscription {
   @@index([stripeCustomerId])
   @@index([status])
 }
+
+
+model StoreProduct {
+  id          String   @id @default(cuid())
+  supplier    String
+  supplierId  String
+  name        String
+  type        String
+  price       String
+  priceAmount Float
+  image       String
+  tag         String
+  cost        Float
+  active      Boolean  @default(true)
+  syncedAt    DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([supplier, supplierId])
+  @@index([active, type])
+  @@index([updatedAt])
+}
