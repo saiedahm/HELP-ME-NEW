@@ -118,20 +118,30 @@ async function runSync(request: Request) {
       url.searchParams.set("page", String(page));
       url.searchParams.set("size", "100");
       url.searchParams.set("countryCode", "DE");
+      url.searchParams.set("features", "enable_category");
       const response = await fetch(url, {
         headers: { "CJ-Access-Token": token, Accept: "application/json" },
         cache: "no-store", signal: AbortSignal.timeout(15000)
       });
       if (!response.ok) throw new Error(`CJ product page ${page} failed`);
-      const payload = await response.json();
+      const payload = await response.json() as { result?: boolean; success?: boolean; code?: number; message?: string };
+      if (payload.result === false || payload.success === false || (typeof payload.code === "number" && payload.code !== 200)) {
+        throw new Error(`CJ rejected product page ${page}: ${String(payload.message || "API returned an unsuccessful result")}`);
+      }
       const extracted = extractProducts(payload);
       totalPages = Math.min(maxPages, extracted.totalPages);
       if (extracted.items.length === 0) break;
 
+      const batch: NormalizedProduct[] = [];
       for (const raw of extracted.items) {
         const product = normalize(raw, usdPerEur, now);
         if (!product) { rejected++; continue; }
-        await prisma.storeProduct.upsert({
+        batch.push(product);
+      }
+      // Keep DB work concurrent but bounded so a 1,000-item sync can finish within the server limit.
+      for (let offset = 0; offset < batch.length; offset += 20) {
+        const chunk = batch.slice(offset, offset + 20);
+        await Promise.all(chunk.map((product) => prisma.storeProduct.upsert({
           where: { supplier_supplierId: { supplier: product.supplier, supplierId: product.supplierId } },
           create: product,
           update: {
@@ -139,8 +149,8 @@ async function runSync(request: Request) {
             priceAmount: product.priceAmount, image: product.image, tag: product.tag,
             cost: product.cost, active: true, syncedAt: now
           }
-        });
-        imported++;
+        })));
+        imported += chunk.length;
       }
       page++;
       if (page <= totalPages) await new Promise((resolve) => setTimeout(resolve, 1100));
