@@ -33,7 +33,7 @@ function categoryOf(name: string, category: string): string {
   return "Fashion";
 }
 function normalize(item: RawProduct, supplier: string, usdToEur?: number): StoreProduct | null {
-  const supplierId = firstText(item, ["vid", "variantId", "variant_id", "pid", "id", "productId", "product_id", "sku", "productSku", "variantSku", "reference"]);
+  const supplierId = firstText(item, ["vid", "variantId", "variant_id", "variantVid", "variant_vid", "sku", "variantSku"]);
   const name = firstText(item, ["productNameEn", "nameEn", "name", "title", "productName", "product_name"]);
   const image = firstText(item, ["bigImage", "productImage", "image", "imageUrl", "image_url", "mainImage", "thumbnail", "picture"]);
   const rawPrice = firstText(item, ["sellPrice", "nowPrice", "price", "retailPrice", "retail_price", "salePrice", "priceMin"]);
