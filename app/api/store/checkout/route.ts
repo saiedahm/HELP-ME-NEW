@@ -9,11 +9,16 @@ export const dynamic = "force-dynamic";
 type CartRequestItem = { id: number; quantity: number };
 
 export async function POST(request: Request) {
-  // This endpoint is deliberately test-only until the operator completes business verification.
+  // Require an explicit, matching mode so test keys can never process live orders.
   const secretKey = process.env.STRIPE_SECRET_KEY;
-  if (!secretKey || !secretKey.startsWith("sk_test_") || process.env.STRIPE_STORE_TEST_MODE !== "true") {
+  const liveMode = process.env.STRIPE_STORE_LIVE_MODE === "true";
+  const testMode = process.env.STRIPE_STORE_TEST_MODE === "true";
+  const keyMatchesMode = liveMode
+    ? Boolean(secretKey?.startsWith("sk_live_"))
+    : Boolean(secretKey?.startsWith("sk_test_"));
+  if (!secretKey || !keyMatchesMode || (liveMode && testMode) || (!liveMode && !testMode)) {
     return NextResponse.json({
-      error: "Store checkout is test-only. Configure a Stripe test key and STRIPE_STORE_TEST_MODE=true. Live payments are intentionally disabled."
+      error: "Store checkout is disabled: configure exactly one matching Stripe mode and API key."
     }, { status: 503 });
   }
 
@@ -81,7 +86,7 @@ export async function POST(request: Request) {
       billing_address_collection: "required",
       shipping_address_collection: { allowed_countries: ["DE", "AT", "BE", "DK", "ES", "FI", "FR", "IE", "IT", "LU", "NL", "PL", "PT", "SE"] },
       metadata: {
-        orderType: "helpme_store_test",
+        orderType: liveMode ? "helpme_store_live" : "helpme_store_test",
         itemCount: String([...uniqueItems.values()].reduce((sum, quantity) => sum + quantity, 0)),
         productIds: [...uniqueItems.keys()].join(",").slice(0, 450)
       },
@@ -100,7 +105,7 @@ export async function POST(request: Request) {
     });
     return NextResponse.json({ url: checkout.url });
   } catch (error) {
-    console.error("HELP-ME test checkout creation failed:", error);
-    return NextResponse.json({ error: "Stripe test checkout could not be started. Check the test-mode API key and account settings." }, { status: 502 });
+    console.error("HELP-ME checkout creation failed:", error);
+    return NextResponse.json({ error: "Stripe checkout could not be started. Check the configured API key and account settings." }, { status: 502 });
   }
 }
