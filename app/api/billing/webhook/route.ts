@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   try {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
-      if (session.mode === "payment" && session.metadata?.orderType === "helpme_store_test" && session.payment_status === "paid") {
+      if (session.mode === "payment" && (session.metadata?.orderType === "helpme_store_test" || session.metadata?.orderType === "helpme_store_live") && session.payment_status === "paid") {
         const shipping = (session as Stripe.Checkout.Session & { shipping_details?: { name?: string | null; address?: { line1?: string | null; line2?: string | null; city?: string | null; state?: string | null; postal_code?: string | null; country?: string | null } | null } }).shipping_details;
         const shippingJson = shipping ? JSON.stringify({
           name: shipping.name ?? null,
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
           }
         });
         const paidOrder = await prisma.storeOrder.findUnique({ where: { stripeCheckoutSession: session.id } });
-        if (paidOrder && event.livemode && process.env.CJ_AUTOMATIC_FULFILLMENT_ENABLED === "true") {
+        if (paidOrder && session.metadata?.orderType === "helpme_store_live" && event.livemode && process.env.CJ_AUTOMATIC_FULFILLMENT_ENABLED === "true") {
           await submitPaidOrderToCJ(paidOrder.id);
         }
       }
