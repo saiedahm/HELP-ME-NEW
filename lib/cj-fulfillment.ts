@@ -80,13 +80,15 @@ export async function submitPaidOrderToCJ(orderId: string): Promise<void> {
     if (!response.ok || !payload || payload.code !== 200 || payload.result === false || payload.success === false || !(typeof payload.data === "string" ? payload.data : payload.data?.orderId || payload.data?.cjOrderId || payload.data?.cjOrderCode)) {
       throw new Error(`CJ order creation failed (HTTP ${response.status}, code ${payload?.code ?? "unknown"}).`);
     }
+    const resultData = payload.data;
+    if (!resultData) throw new Error("CJ response did not include order details.");
     await prisma.storeOrder.update({
       where: { id: order.id },
       data: {
         status: "SUPPLIER_SUBMITTED",
-        supplierOrderId: typeof payload.data === "string" ? payload.data : (payload.data.orderId || payload.data.cjOrderId || payload.data.cjOrderCode)!,
-        supplierOrderNumber: typeof payload.data === "string" ? `HM-${order.id}` : (payload.data.orderNum || payload.data.orderNumber || `HM-${order.id}`),
-        supplierStatus: typeof payload.data === "string" ? "CREATED_UNPAID" : (payload.data.orderStatus || "CREATED_UNPAID"),
+        supplierOrderId: typeof resultData === "string" ? resultData : (resultData.orderId || resultData.cjOrderId || resultData.cjOrderCode)!,
+        supplierOrderNumber: typeof resultData === "string" ? `HM-${order.id}` : (resultData.orderNum || resultData.orderNumber || `HM-${order.id}`),
+        supplierStatus: typeof resultData === "string" ? "CREATED_UNPAID" : (resultData.orderStatus || "CREATED_UNPAID"),
         supplierSubmittedAt: new Date(),
         lastError: null
       }
