@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
       if (session.mode === "payment" && session.metadata?.orderType === "helpme_store_test" && session.payment_status === "paid") {
-        const shipping = session.shipping_details;
+        const shipping = (session as Stripe.Checkout.Session & { shipping_details?: { name?: string | null; address?: { line1?: string | null; line2?: string | null; city?: string | null; state?: string | null; postal_code?: string | null; country?: string | null } | null } }).shipping_details;
         const shippingJson = shipping ? JSON.stringify({
           name: shipping.name ?? null,
           address: shipping.address ? {
