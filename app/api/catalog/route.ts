@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getCJAccessToken } from "@/lib/cj-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -32,7 +33,7 @@ function categoryOf(name: string, category: string): string {
   return "Fashion";
 }
 function normalize(item: RawProduct, supplier: string, usdToEur?: number): StoreProduct | null {
-  const supplierId = firstText(item, ["pid", "id", "productId", "product_id", "sku", "productSku", "variantSku", "reference"]);
+  const supplierId = firstText(item, ["vid", "variantId", "variant_id", "variantVid", "variant_vid"]);
   const name = firstText(item, ["productNameEn", "nameEn", "name", "title", "productName", "product_name"]);
   const image = firstText(item, ["bigImage", "productImage", "image", "imageUrl", "image_url", "mainImage", "thumbnail", "picture"]);
   const rawPrice = firstText(item, ["sellPrice", "nowPrice", "price", "retailPrice", "retail_price", "salePrice", "priceMin"]);
@@ -81,25 +82,14 @@ async function getUsdToEur(): Promise<number> {
   const response = await fetch("https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml", { next: { revalidate: 3600 } });
   if (!response.ok) throw new Error("Could not retrieve the daily USD/EUR reference rate");
   const xml = await response.text();
-  const match = xml.match(/currency=["']USD["']\s+rate=["']([0-9.]+)["']/);
-  const usdPerEur = match ? Number(match[1]) : NaN;
+  const usdCube = xml.match(/<Cube[^>]*currency="USD"[^>]*rate="([0-9.]+)"[^>]*\/>|<Cube[^>]*rate="([0-9.]+)"[^>]*currency="USD"[^>]*\/>/);
+  const usdPerEur = usdCube ? Number(usdCube[1] || usdCube[2]) : NaN;
   if (!Number.isFinite(usdPerEur) || usdPerEur <= 0) throw new Error("Daily USD/EUR reference rate was unavailable");
   return usdPerEur;
 }
 async function loadCJ(page: number, size: number): Promise<{ products: StoreProduct[]; hasMore: boolean }> {
-  const apiKey = process.env.CJ_API_KEY;
-  if (!apiKey) return { products: [], hasMore: false };
-  const authResponse = await fetch("https://developers.cjdropshipping.com/api2.0/v1/authentication/getAccessToken", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ apiKey }),
-    cache: "no-store"
-  });
-  if (!authResponse.ok) throw new Error("CJ authentication failed");
-  const authPayload = await authResponse.json() as { data?: { accessToken?: string }; success?: boolean; result?: boolean };
-  const accessToken = authPayload.data?.accessToken;
-  if (!accessToken || authPayload.success === false || authPayload.result === false) throw new Error("CJ did not issue an access token");
-  await new Promise((resolve) => setTimeout(resolve, 1050));
+  if (!(process.env.CJ_API_KEY || process.env.CJ_DROPSHIPPING_API_KEY)) return { products: [], hasMore: false };
+  const accessToken = await getCJAccessToken();
   const query = new URL("https://developers.cjdropshipping.com/api2.0/v1/product/listV2");
   query.searchParams.set("page", String(page));
   query.searchParams.set("size", String(size));
@@ -143,7 +133,7 @@ export async function GET(request: Request) {
     pageSize: size * 2,
     hasMore: page < 10 && (cj.hasMore || bg.hasMore),
     suppliers: {
-      cj: { configured: Boolean(process.env.CJ_API_KEY), imported: cj.products.length },
+      cj: { configured: Boolean(process.env.CJ_API_KEY || process.env.CJ_DROPSHIPPING_API_KEY), imported: cj.products.length },
       brandsGateway: { configured: Boolean(process.env.BRANDSGATEWAY_CATALOG_URL && process.env.BRANDSGATEWAY_API_TOKEN && process.env.BRANDSGATEWAY_CURRENCY === "EUR"), imported: bg.products.length }
     },
     errors

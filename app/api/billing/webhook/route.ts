@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/db";
+import { submitPaidOrderToCJ } from "@/lib/cj-fulfillment";
 
 export const runtime = "nodejs";
 
@@ -26,6 +27,34 @@ export async function POST(request: Request) {
   try {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
+      if (session.mode === "payment" && (session.metadata?.orderType === "helpme_store_test" || session.metadata?.orderType === "helpme_store_live") && session.payment_status === "paid") {
+        const shipping = (session as Stripe.Checkout.Session & { shipping_details?: { name?: string | null; address?: { line1?: string | null; line2?: string | null; city?: string | null; state?: string | null; postal_code?: string | null; country?: string | null } | null } }).shipping_details;
+        const shippingJson = shipping ? JSON.stringify({
+          name: shipping.name ?? null,
+          address: shipping.address ? {
+            line1: shipping.address.line1 ?? null,
+            line2: shipping.address.line2 ?? null,
+            city: shipping.address.city ?? null,
+            state: shipping.address.state ?? null,
+            postal_code: shipping.address.postal_code ?? null,
+            country: shipping.address.country ?? null
+          } : null
+        }) : null;
+        await prisma.storeOrder.updateMany({
+          where: { stripeCheckoutSession: session.id, status: "PENDING" },
+          data: {
+            status: "PAID",
+            stripePaymentIntent: typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id,
+            customerEmail: session.customer_details?.email ?? undefined,
+            shippingJson: shippingJson ?? undefined,
+            paidAt: new Date()
+          }
+        });
+        const paidOrder = await prisma.storeOrder.findUnique({ where: { stripeCheckoutSession: session.id } });
+        if (paidOrder && session.metadata?.orderType === "helpme_store_live" && event.livemode && process.env.CJ_AUTOMATIC_FULFILLMENT_ENABLED === "true") {
+          await submitPaidOrderToCJ(paidOrder.id);
+        }
+      }
       const organizationId = session.metadata?.organizationId || session.client_reference_id;
       const subscriptionId = typeof session.subscription === "string"
         ? session.subscription
