@@ -33,7 +33,7 @@ function categoryOf(name: string, category: string): string {
   return "Fashion";
 }
 function normalize(item: RawProduct, supplier: string, usdToEur?: number): StoreProduct | null {
-  const supplierId = firstText(item, ["vid", "variantId", "variant_id", "variantVid", "variant_vid", "sku", "variantSku"]);
+  const supplierId = firstText(item, ["vid", "variantId", "variant_id", "variantVid", "variant_vid"]);
   const name = firstText(item, ["productNameEn", "nameEn", "name", "title", "productName", "product_name"]);
   const image = firstText(item, ["bigImage", "productImage", "image", "imageUrl", "image_url", "mainImage", "thumbnail", "picture"]);
   const rawPrice = firstText(item, ["sellPrice", "nowPrice", "price", "retailPrice", "retail_price", "salePrice", "priceMin"]);
@@ -88,7 +88,7 @@ async function getUsdToEur(): Promise<number> {
   return usdPerEur;
 }
 async function loadCJ(page: number, size: number): Promise<{ products: StoreProduct[]; hasMore: boolean }> {
-  if (!process.env.CJ_API_KEY) return { products: [], hasMore: false };
+  if (!(process.env.CJ_API_KEY || process.env.CJ_DROPSHIPPING_API_KEY)) return { products: [], hasMore: false };
   const accessToken = await getCJAccessToken();
   const query = new URL("https://developers.cjdropshipping.com/api2.0/v1/product/listV2");
   query.searchParams.set("page", String(page));
@@ -133,7 +133,7 @@ export async function GET(request: Request) {
     pageSize: size * 2,
     hasMore: page < 10 && (cj.hasMore || bg.hasMore),
     suppliers: {
-      cj: { configured: Boolean(process.env.CJ_API_KEY), imported: cj.products.length },
+      cj: { configured: Boolean(process.env.CJ_API_KEY || process.env.CJ_DROPSHIPPING_API_KEY), imported: cj.products.length },
       brandsGateway: { configured: Boolean(process.env.BRANDSGATEWAY_CATALOG_URL && process.env.BRANDSGATEWAY_API_TOKEN && process.env.BRANDSGATEWAY_CURRENCY === "EUR"), imported: bg.products.length }
     },
     errors
