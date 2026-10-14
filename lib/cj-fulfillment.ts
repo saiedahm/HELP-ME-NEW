@@ -6,7 +6,7 @@ type CJResponse = {
   result?: boolean;
   success?: boolean;
   message?: string;
-  data?: { orderId?: string; orderNumber?: string; orderStatus?: string } | null;
+  data?: string | { orderId?: string; orderNum?: string; orderNumber?: string; orderStatus?: string; cjOrderId?: string; cjOrderCode?: string } | null;
 };
 
 type OrderLine = { supplier: string; supplierId: string; name: string; quantity: number };
@@ -29,7 +29,7 @@ export async function submitPaidOrderToCJ(orderId: string): Promise<void> {
   if (!logisticName) throw new Error("CJ_LOGISTIC_NAME is not configured.");
 
   const claimed = await prisma.storeOrder.updateMany({
-    where: { id: orderId, status: "PAID" },
+    where: { id: orderId, status: { in: ["PAID", "FULFILLMENT_FAILED"] } },
     data: { status: "SUPPLIER_SUBMITTING", lastError: null }
   });
   if (claimed.count !== 1) return;
@@ -77,16 +77,16 @@ export async function submitPaidOrderToCJ(orderId: string): Promise<void> {
       cache: "no-store"
     });
     const payload = await response.json().catch(() => null) as CJResponse | null;
-    if (!response.ok || !payload || payload.code !== 200 || payload.result === false || payload.success === false || !payload.data?.orderId) {
+    if (!response.ok || !payload || payload.code !== 200 || payload.result === false || payload.success === false || !(typeof payload.data === "string" ? payload.data : payload.data?.orderId || payload.data?.cjOrderId || payload.data?.cjOrderCode)) {
       throw new Error(`CJ order creation failed (HTTP ${response.status}, code ${payload?.code ?? "unknown"}).`);
     }
     await prisma.storeOrder.update({
       where: { id: order.id },
       data: {
         status: "SUPPLIER_SUBMITTED",
-        supplierOrderId: payload.data.orderId,
-        supplierOrderNumber: payload.data.orderNumber || `HM-${order.id}`,
-        supplierStatus: payload.data.orderStatus || "CREATED_UNPAID",
+        supplierOrderId: typeof payload.data === "string" ? payload.data : (payload.data.orderId || payload.data.cjOrderId || payload.data.cjOrderCode)!,
+        supplierOrderNumber: typeof payload.data === "string" ? `HM-${order.id}` : (payload.data.orderNum || payload.data.orderNumber || `HM-${order.id}`),
+        supplierStatus: typeof payload.data === "string" ? "CREATED_UNPAID" : (payload.data.orderStatus || "CREATED_UNPAID"),
         supplierSubmittedAt: new Date(),
         lastError: null
       }
