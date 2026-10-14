@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getCJAccessToken } from "@/lib/cj-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -87,19 +88,8 @@ async function getUsdToEur(): Promise<number> {
   return usdPerEur;
 }
 async function loadCJ(page: number, size: number): Promise<{ products: StoreProduct[]; hasMore: boolean }> {
-  const apiKey = process.env.CJ_API_KEY;
-  if (!apiKey) return { products: [], hasMore: false };
-  const authResponse = await fetch("https://developers.cjdropshipping.com/api2.0/v1/authentication/getAccessToken", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ apiKey }),
-    cache: "no-store"
-  });
-  if (!authResponse.ok) throw new Error("CJ authentication failed");
-  const authPayload = await authResponse.json() as { data?: { accessToken?: string }; success?: boolean; result?: boolean };
-  const accessToken = authPayload.data?.accessToken;
-  if (!accessToken || authPayload.success === false || authPayload.result === false) throw new Error("CJ did not issue an access token");
-  await new Promise((resolve) => setTimeout(resolve, 1050));
+  if (!process.env.CJ_API_KEY) return { products: [], hasMore: false };
+  const accessToken = await getCJAccessToken();
   const query = new URL("https://developers.cjdropshipping.com/api2.0/v1/product/listV2");
   query.searchParams.set("page", String(page));
   query.searchParams.set("size", String(size));
