@@ -155,6 +155,7 @@ model StoreOrder {
   amountTotal           Int
   status                StoreOrderStatus @default(PENDING)
   itemsJson             String
+  shippingJson          String?
   supplierOrderId       String?
   supplierOrderNumber   String?
   supplierStatus        String?
