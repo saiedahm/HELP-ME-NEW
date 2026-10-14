@@ -311,6 +311,13 @@ export default function HomePage() {
         </div>
       </header>
 
+      <section className="trial-notice welcome-ribbon" role="region" aria-label="Welcome to Help-Me" dir={isArabic ? "rtl" : "ltr"}>
+        <span className="trial-notice-icon" aria-hidden="true">✦</span>
+        <div><strong>{language === "AR" ? "اختاري ما يشبهكِ… ودعي التفاصيل لنا" : language === "DE" ? "Finde deine Favoriten — mit Liebe ausgewählt" : language === "TR" ? "Sana özel güzellikleri keşfet" : language === "RU" ? "Откройте красоту, созданную для вас" : language === "FR" ? "Découvrez vos coups de cœur, choisis avec soin" : "A LITTLE LUXURY, JUST FOR YOU"}</strong>
+        <p>{language === "AR" ? "اكتشفي عالمًا من الجمال والأناقة والهدايا المميزة — لمسات كلاسيكية، اختيارات أنيقة، وتجربة تسوّق صُممت لتسعدكِ." : language === "DE" ? "Entdecke Beauty, Stil und besondere Geschenkideen — elegant zusammengestellt für die kleinen Momente, die den Alltag besonders machen." : language === "TR" ? "Güzellik, stil ve özel hediyeler dünyasını keşfet — günlük anlarına zarafet katan özenli seçimler." : language === "RU" ? "Откройте мир красоты, стиля и особенных подарков — тщательно подобранные детали для приятных моментов каждый день." : language === "FR" ? "Un univers de beauté, de style et de cadeaux choisis avec soin, pour rendre chaque jour un peu plus précieux." : "Discover beauty, style and thoughtful gifts — timeless touches and lovely finds to make every day feel special."}</p></div>
+        <span className="trial-status welcome-tag">{language === "AR" ? "بكل أناقة" : language === "DE" ? "Mit Stil" : language === "TR" ? "Zarafetle" : language === "RU" ? "С элегантностью" : language === "FR" ? "Avec élégance" : "MADE FOR YOU"}</span>
+      </section>
+
       <section className="hero">
         <div className="hero-copy">
           <div className="eyebrow"><span /> {t("eyebrow")} <span /></div>
