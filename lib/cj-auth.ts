@@ -55,8 +55,8 @@ function store(payload: CJTokenResponse, previous?: CachedTokens): CachedTokens 
 
 /** Server-only in-memory token cache; tokens are never exposed to client responses. */
 export async function getCJAccessToken(): Promise<string> {
-  const apiKey = process.env.CJ_API_KEY?.trim();
-  if (!apiKey) throw new Error("CJ_API_KEY is not configured on the server.");
+  const apiKey = (process.env.CJ_API_KEY || process.env.CJ_DROPSHIPPING_API_KEY)?.trim();
+  if (!apiKey) throw new Error("CJ API key is not configured on the server.");
   if (cached && cached.accessExpiresAt > Date.now() + 5 * 60_000) return cached.accessToken;
   if (pending) return pending;
 
