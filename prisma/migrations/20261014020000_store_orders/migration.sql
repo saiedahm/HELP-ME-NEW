@@ -23,3 +23,5 @@ CREATE UNIQUE INDEX "StoreOrder_stripeCheckoutSession_key" ON "StoreOrder"("stri
 CREATE UNIQUE INDEX "StoreOrder_stripePaymentIntent_key" ON "StoreOrder"("stripePaymentIntent");
 CREATE INDEX "StoreOrder_status_createdAt_idx" ON "StoreOrder"("status", "createdAt");
 CREATE INDEX "StoreOrder_supplierOrderId_idx" ON "StoreOrder"("supplierOrderId");
+
+ALTER TABLE "StoreOrder" ADD COLUMN "shippingJson" TEXT;
