@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/db";
+import { submitPaidOrderToCJ } from "@/lib/cj-fulfillment";
 
 export const runtime = "nodejs";
 
@@ -49,6 +50,10 @@ export async function POST(request: Request) {
             paidAt: new Date()
           }
         });
+        const paidOrder = await prisma.storeOrder.findUnique({ where: { stripeCheckoutSession: session.id } });
+        if (paidOrder && event.livemode && process.env.CJ_AUTOMATIC_FULFILLMENT_ENABLED === "true") {
+          await submitPaidOrderToCJ(paidOrder.id);
+        }
       }
       const organizationId = session.metadata?.organizationId || session.client_reference_id;
       const subscriptionId = typeof session.subscription === "string"
