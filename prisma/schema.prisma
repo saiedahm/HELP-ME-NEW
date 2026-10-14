@@ -136,3 +136,34 @@ model Subscription {
   @@index([stripeCustomerId])
   @@index([status])
 }
+
+
+enum StoreOrderStatus {
+  PENDING
+  PAID
+  SUPPLIER_SUBMITTED
+  FULFILLMENT_FAILED
+  CANCELLED
+}
+
+model StoreOrder {
+  id                    String          @id @default(cuid())
+  stripeCheckoutSession String          @unique
+  stripePaymentIntent   String?         @unique
+  customerEmail         String?
+  currency              String          @default("eur")
+  amountTotal           Int
+  status                StoreOrderStatus @default(PENDING)
+  itemsJson             String
+  supplierOrderId       String?
+  supplierOrderNumber   String?
+  supplierStatus        String?
+  lastError             String?
+  paidAt                DateTime?
+  supplierSubmittedAt   DateTime?
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  @@index([status, createdAt])
+  @@index([supplierOrderId])
+}
