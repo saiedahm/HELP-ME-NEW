@@ -56,8 +56,8 @@ export async function POST(request: Request) {
     const amount = Number(product?.priceAmount);
     const name = typeof product?.name === "string" ? product.name.trim() : "";
     const supplierId = typeof product?.supplierId === "string" ? product.supplierId : "";
-    if (!product || !name || !supplierId || !Number.isFinite(amount) || amount < 0.5 || amount > 100000) {
-      return NextResponse.json({ error: "One or more cart items are not confirmed real supplier products. No payment was started." }, { status: 409 });
+    if (!product || product.supplier !== "CJdropshipping" || !name || !supplierId || !Number.isFinite(amount) || amount < 0.5 || amount > 100000) {
+      return NextResponse.json({ error: "One or more items are not verified CJ products ready for automated fulfillment. No payment was started." }, { status: 409 });
     }
     orderItems.push({ productId: id, supplier: typeof product?.supplier === "string" ? product.supplier : "", supplierId, name, quantity, unitAmountCents: Math.round(amount * 100) });
     lineItems.push({
