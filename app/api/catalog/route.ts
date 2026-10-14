@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -129,6 +130,44 @@ async function loadBrandsGateway(page: number, size: number): Promise<{ products
 
 export async function GET(request: Request) {
   const errors: string[] = [];
+  // Prefer the persistent catalog populated by the scheduled supplier sync.
+  try {
+    const stored = await prisma.storeProduct.findMany({
+      where: { active: true },
+      orderBy: { updatedAt: "desc" },
+      take: 1000
+    });
+    if (stored.length > 0) {
+      const url = new URL(request.url);
+      const requestedPage = Math.min(10, Math.max(1, Number.parseInt(url.searchParams.get("page") || "1", 10) || 1));
+      const offset = (requestedPage - 1) * 200;
+      const products = stored.slice(offset, offset + 200).map((item) => ({
+        id: stableId(`${item.supplier}:${item.supplierId}`),
+        name: item.name,
+        type: item.type,
+        price: item.price,
+        priceAmount: item.priceAmount,
+        image: item.image,
+        tag: item.tag,
+        supplier: item.supplier,
+        supplierId: item.supplierId,
+        cost: item.cost
+      }));
+      return NextResponse.json({
+        products, count: products.length, page: requestedPage, pageSize: 200,
+        hasMore: offset + products.length < stored.length,
+        source: "database", totalStored: stored.length,
+        suppliers: {
+          cj: { configured: Boolean(process.env.CJ_API_KEY), imported: stored.filter((item) => item.supplier === "CJdropshipping").length },
+          brandsGateway: { configured: Boolean(process.env.BRANDSGATEWAY_CATALOG_URL && process.env.BRANDSGATEWAY_API_TOKEN && process.env.BRANDSGATEWAY_CURRENCY === "EUR"), imported: stored.filter((item) => item.supplier === "BrandsGateway").length }
+        },
+        errors: []
+      }, { headers: { "Cache-Control": "no-store" } });
+    }
+  } catch (error) {
+    console.error("Persistent product catalog unavailable; trying live supplier feed:", error);
+    errors.push("Persistent database catalog is unavailable");
+  }
   const url = new URL(request.url);
   const page = Math.min(10, Math.max(1, Number.parseInt(url.searchParams.get("page") || "1", 10) || 1));
   const size = 100;
