@@ -27,12 +27,25 @@ export async function POST(request: Request) {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
       if (session.mode === "payment" && session.metadata?.orderType === "helpme_store_test" && session.payment_status === "paid") {
+        const shipping = session.shipping_details;
+        const shippingJson = shipping ? JSON.stringify({
+          name: shipping.name ?? null,
+          address: shipping.address ? {
+            line1: shipping.address.line1 ?? null,
+            line2: shipping.address.line2 ?? null,
+            city: shipping.address.city ?? null,
+            state: shipping.address.state ?? null,
+            postal_code: shipping.address.postal_code ?? null,
+            country: shipping.address.country ?? null
+          } : null
+        }) : null;
         await prisma.storeOrder.updateMany({
           where: { stripeCheckoutSession: session.id, status: "PENDING" },
           data: {
             status: "PAID",
             stripePaymentIntent: typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id,
             customerEmail: session.customer_details?.email ?? undefined,
+            shippingJson: shippingJson ?? undefined,
             paidAt: new Date()
           }
         });
