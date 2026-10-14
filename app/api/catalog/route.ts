@@ -82,8 +82,9 @@ async function getUsdToEur(): Promise<number> {
   const response = await fetch("https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml", { next: { revalidate: 3600 } });
   if (!response.ok) throw new Error("Could not retrieve the daily USD/EUR reference rate");
   const xml = await response.text();
-  const match = xml.match(/currency=["']USD["']\s+rate=["']([0-9.]+)["']/);
-  const usdPerEur = match ? Number(match[1]) : NaN;
+  // ECB Cube attributes can be ordered differently; isolate the USD Cube and parse its rate.
+  const usdCube = xml.match(/<Cube\\b(?=[^>]*\\bcurrency=["']USD["'])(?=[^>]*\\brate=["']([0-9.]+)["'])[^>]*\\/?\\s*>/);
+  const usdPerEur = usdCube ? Number(usdCube[1]) : NaN;
   if (!Number.isFinite(usdPerEur) || usdPerEur <= 0) throw new Error("Daily USD/EUR reference rate was unavailable");
   return usdPerEur;
 }
