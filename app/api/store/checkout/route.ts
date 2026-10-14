@@ -44,7 +44,7 @@ export async function POST(request: Request) {
   const uniqueItems = new Map<number, number>();
   for (const item of items) uniqueItems.set(item.id, (uniqueItems.get(item.id) ?? 0) + item.quantity);
   const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
-  const orderItems: Array<{ productId: number; supplierId: string; name: string; quantity: number; unitAmountCents: number }> = [];
+  const orderItems: Array<{ productId: number; supplier: string; supplierId: string; name: string; quantity: number; unitAmountCents: number }> = [];
 
   for (const [id, quantity] of uniqueItems) {
     const product = products.find((entry) => Number(entry.id) === id);
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     if (!product || !name || !supplierId || !Number.isFinite(amount) || amount < 0.5 || amount > 100000) {
       return NextResponse.json({ error: "One or more cart items are not confirmed real supplier products. No payment was started." }, { status: 409 });
     }
-    orderItems.push({ productId: id, supplierId, name, quantity, unitAmountCents: Math.round(amount * 100) });
+    orderItems.push({ productId: id, supplier: typeof product?.supplier === "string" ? product.supplier : "", supplierId, name, quantity, unitAmountCents: Math.round(amount * 100) });
     lineItems.push({
       quantity,
       price_data: {
