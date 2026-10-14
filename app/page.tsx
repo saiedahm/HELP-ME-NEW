@@ -311,13 +311,6 @@ export default function HomePage() {
         </div>
       </header>
 
-      <section className="trial-notice" role="status" aria-label="Store trial period" dir={isArabic ? "rtl" : "ltr"}>
-        <span className="trial-notice-icon" aria-hidden="true">✦</span>
-        <div><strong>{language === "AR" ? "فترة تجريبية — لا بيع ولا تحصيل أموال" : language === "DE" ? "Testphase — kein Verkauf und keine Zahlung" : language === "TR" ? "Deneme dönemi — satış ve ödeme alınmaz" : language === "RU" ? "Тестовый период — без продаж и оплаты" : language === "FR" ? "Période de test — aucune vente ni aucun paiement" : "TRIAL PERIOD — NO SALES OR PAYMENTS"}</strong>
-        <p>{language === "AR" ? "نعرض المتجر للمراجعة والتقييم من الموردين. الأسعار والمخزون والشحن قيد التحقق، والشراء والدفع غير متاحين حاليًا." : language === "DE" ? "Dieser Shop dient der Prüfung durch potenzielle Lieferanten. Preise, Bestand und Versand werden noch geprüft; Kaufen und Bezahlen sind derzeit deaktiviert." : language === "TR" ? "Mağaza, tedarikçilerin incelemesi için sunulmaktadır. Fiyatlar, stok ve kargo doğrulanıyor; satın alma ve ödeme şu anda kapalıdır." : language === "RU" ? "Магазин представлен для ознакомления потенциальным поставщикам. Цены, наличие и доставка проверяются; покупка и оплата отключены." : language === "FR" ? "Cette boutique est présentée aux fournisseurs potentiels pour évaluation. Prix, stock et livraison restent à confirmer ; achat et paiement sont désactivés." : "This storefront is being presented for supplier review. Prices, stock and shipping are still being verified; purchasing and payment are disabled."}</p></div>
-        <span className="trial-status">{language === "AR" ? "للمعاينة فقط" : language === "DE" ? "Nur Vorschau" : language === "TR" ? "Sadece önizleme" : language === "RU" ? "Только просмотр" : language === "FR" ? "Aperçu uniquement" : "PREVIEW ONLY"}</span>
-      </section>
-
       <section className="hero">
         <div className="hero-copy">
           <div className="eyebrow"><span /> {t("eyebrow")} <span /></div>
