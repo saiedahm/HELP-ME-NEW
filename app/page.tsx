@@ -3,41 +3,21 @@
 import { useEffect, useMemo, useState } from "react";
 
 const categories = [
-  { name: "Beauty", ar: "الجمال والعناية", icon: "✧", note: "Fragrance, skincare & makeup" },
-  { name: "Fashion", ar: "الأزياء", icon: "♧", note: "Pieces made to feel like you" },
-  { name: "Bags", ar: "الحقائب", icon: "▱", note: "Everyday icons & evening bags" },
-  { name: "Jewelry", ar: "المجوهرات", icon: "◇", note: "Little details, lasting beauty" },
-  { name: "Lingerie", ar: "الملابس الداخلية", icon: "♡", note: "Comfort, confidence & softness" },
-  { name: "Hair Care", ar: "العناية بالشعر", icon: "⌁", note: "Tools and rituals for your hair" },
-  { name: "Technology", ar: "التقنية", icon: "▯", note: "Smart essentials for her life" },
-  { name: "Gifts", ar: "الهدايا", icon: "♢", note: "Thoughtful moments, beautifully wrapped" },
-  { name: "Watches", ar: "الساعات", icon: "◷", note: "Timeless finishing touches" },
-  { name: "Body Care", ar: "العناية بالجسم", icon: "❋", note: "Your own moment of calm" },
+  { name: "Women's Fashion", ar: "أزياء نسائية", icon: "♧", note: "Elegant clothing & timeless pieces" },
+  { name: "Lingerie", ar: "الملابس الداخلية", icon: "♡", note: "Elegant nightwear & lingerie" },
+  { name: "Perfume", ar: "العطور", icon: "✧", note: "Women's fragrance edits" },
+  { name: "Cosmetics", ar: "مستحضرات التجميل", icon: "❋", note: "Makeup & skincare essentials" },
 ];
 
 const demoProducts = [
-  { id: 1, name: "Rose Veil Eau de Parfum", type: "Beauty", price: "€—", image: "/products/beauty-edit.svg", tag: "THE SIGNATURE EDIT" },
-  { id: 2, name: "The Everyday Shoulder Bag", type: "Bags", price: "€—", image: "/products/bag-shoulder.svg", tag: "TIMELESS STYLE" },
-  { id: 3, name: "Golden Hour Earrings", type: "Jewelry", price: "€—", image: "/products/jewelry-edit.svg", tag: "A LITTLE LUXURY" },
-  { id: 4, name: "Everyday Smart Companion", type: "Technology", price: "€—", image: "/products/technology-edit.svg", tag: "SMART & BEAUTIFUL" },
-  { id: 5, name: "The Soft Touch Gift Set", type: "Gifts", price: "€—", image: "/products/gifts-edit.svg", tag: "READY TO GIFT" },
-  { id: 6, name: "Silk-Feel Evening Edit", type: "Fashion", price: "€—", image: "/products/fashion-edit.svg", tag: "FEEL BEAUTIFUL" },
-  { id: 7, name: "Soft Lace Lingerie Set", type: "Lingerie", price: "€—", image: "/products/fashion-edit.svg", tag: "COMFORT & CONFIDENCE" },
-  { id: 8, name: "Everyday Comfort Bra", type: "Lingerie", price: "€—", image: "/products/fashion-edit.svg", tag: "EVERYDAY ESSENTIAL" },
-  { id: 9, name: "Seamless Briefs", type: "Lingerie", price: "€—", image: "/products/fashion-edit.svg", tag: "SOFT & SEAMLESS" },
-  { id: 10, name: "Satin Sleepwear", type: "Lingerie", price: "€—", image: "/products/fashion-edit.svg", tag: "REST IN STYLE" },
-  { id: 11, name: "Classic Day Dress", type: "Fashion", price: "€—", image: "/products/fashion-edit.svg", tag: "TIMELESS FEMININITY" },
-  { id: 12, name: "Everyday Blouse", type: "Fashion", price: "€—", image: "/products/fashion-edit.svg", tag: "EASY ELEGANCE" },
-  { id: 13, name: "Structured Mini Bag", type: "Bags", price: "€—", image: "/products/bag-shoulder.svg", tag: "A MODERN CLASSIC" },
-  { id: 14, name: "Layered Necklace", type: "Jewelry", price: "€—", image: "/products/jewelry-edit.svg", tag: "THE FINISHING TOUCH" },
-  { id: 15, name: "Hair Styling Tool", type: "Hair Care", price: "€—", image: "/products/beauty-edit.svg", tag: "YOUR HAIR RITUAL" },
-  { id: 16, name: "Daily Body Care Set", type: "Body Care", price: "€—", image: "/products/beauty-edit.svg", tag: "A MOMENT FOR YOU" },
-  { id: 17, name: "Minimalist Wristwatch", type: "Watches", price: "€—", image: "/products/jewelry-edit.svg", tag: "TIMELESS DETAIL" },
-  { id: 18, name: "Silky Hair Care Set", type: "Hair Care", price: "€—", image: "/products/beauty-edit.svg", tag: "CARE MADE SIMPLE" },
-  { id: 19, name: "Elegant Gift Box", type: "Gifts", price: "€—", image: "/products/gifts-edit.svg", tag: "GIVE A LITTLE JOY" },
-  { id: 20, name: "Wireless Everyday Audio", type: "Technology", price: "€—", image: "/products/technology-edit.svg", tag: "MADE FOR YOUR DAY" },
- ];
-// The live catalog remains empty until real supplier products are synchronized.
+  { id: 1, name: "Rose Veil Eau de Parfum", type: "Perfume", price: "€—", image: "/products/beauty-edit.svg", tag: "THE SIGNATURE SCENT" },
+  { id: 2, name: "Soft Lace Lingerie Set", type: "Lingerie", price: "€—", image: "/products/fashion-edit.svg", tag: "COMFORT & CONFIDENCE" },
+  { id: 3, name: "Satin Sleepwear", type: "Lingerie", price: "€—", image: "/products/fashion-edit.svg", tag: "REST IN STYLE" },
+  { id: 4, name: "Velvet Rose Lip Colour", type: "Cosmetics", price: "€—", image: "/products/beauty-edit.svg", tag: "THE BEAUTY EDIT" },
+  { id: 5, name: "Classic Day Dress", type: "Women's Fashion", price: "€—", image: "/products/fashion-edit.svg", tag: "TIMELESS FEMININITY" },
+  { id: 6, name: "Daily Skin Ritual", type: "Cosmetics", price: "€—", image: "/products/beauty-edit.svg", tag: "A MOMENT FOR YOU" },
+];
+// Preview samples are intentionally not mixed into the live supplier catalog.
 const products: typeof demoProducts = [];
 
 const copy: Record<string, Record<string, string>> = {
@@ -50,12 +30,12 @@ const copy: Record<string, Record<string, string>> = {
 };
 
 const categoryTranslations: Record<string, Record<string, string>> = {
-  EN: { Beauty: "Beauty", Fashion: "Fashion", Bags: "Bags", Jewelry: "Jewelry", Lingerie: "Lingerie", "Hair Care": "Hair Care", Technology: "Technology", Gifts: "Gifts", Watches: "Watches", "Body Care": "Body Care", All: "All" },
-  DE: { Beauty: "Beauty", Fashion: "Mode", Bags: "Taschen", Jewelry: "Schmuck", Lingerie: "Dessous", "Hair Care": "Haarpflege", Technology: "Technik", Gifts: "Geschenke", Watches: "Uhren", "Body Care": "Körperpflege", All: "Alle" },
-  TR: { Beauty: "Güzellik", Fashion: "Moda", Bags: "Çantalar", Jewelry: "Takı", Lingerie: "İç giyim", "Hair Care": "Saç bakımı", Technology: "Teknoloji", Gifts: "Hediyeler", Watches: "Saatler", "Body Care": "Vücut bakımı", All: "Tümü" },
-  RU: { Beauty: "Красота", Fashion: "Мода", Bags: "Сумки", Jewelry: "Украшения", Lingerie: "Бельё", "Hair Care": "Уход за волосами", Technology: "Технологии", Gifts: "Подарки", Watches: "Часы", "Body Care": "Уход за телом", All: "Всё" },
-  FR: { Beauty: "Beauté", Fashion: "Mode", Bags: "Sacs", Jewelry: "Bijoux", Lingerie: "Lingerie", "Hair Care": "Soins des cheveux", Technology: "Technologie", Gifts: "Cadeaux", Watches: "Montres", "Body Care": "Soins du corps", All: "Tout" },
-  AR: { Beauty: "الجمال", Fashion: "الأزياء", Bags: "الحقائب", Jewelry: "المجوهرات", Lingerie: "الملابس الداخلية", "Hair Care": "العناية بالشعر", Technology: "التقنية", Gifts: "الهدايا", Watches: "الساعات", "Body Care": "العناية بالجسم", All: "الكل" }
+  EN: { "Women's Fashion": "Women's Fashion", Lingerie: "Lingerie", Perfume: "Perfume", Cosmetics: "Cosmetics", All: "All" },
+  DE: { "Women's Fashion": "Damenmode", Lingerie: "Dessous", Perfume: "Parfüm", Cosmetics: "Kosmetik", All: "Alle" },
+  TR: { "Women's Fashion": "Kadın modası", Lingerie: "İç giyim", Perfume: "Parfüm", Cosmetics: "Kozmetik", All: "Tümü" },
+  RU: { "Women's Fashion": "Женская мода", Lingerie: "Нижнее бельё", Perfume: "Парфюм", Cosmetics: "Косметика", All: "Всё" },
+  FR: { "Women's Fashion": "Mode femme", Lingerie: "Lingerie", Perfume: "Parfum", Cosmetics: "Cosmétiques", All: "Tout" },
+  AR: { "Women's Fashion": "الأزياء النسائية", Lingerie: "الملابس الداخلية", Perfume: "العطور", Cosmetics: "مستحضرات التجميل", All: "الكل" }
 };
 
 
