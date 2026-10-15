@@ -77,7 +77,8 @@ function normalize(item: CJProduct, usdPerEur: number, now: Date): NormalizedPro
   const supplierId = textValue(item, ["pid", "productId", "product_id", "id", "productSku", "sku"]);
   const name = textValue(item, ["productNameEn", "nameEn", "productName", "name", "title"]);
   const image = textValue(item, ["bigImage", "productImage", "image", "imageUrl", "mainImage", "thumbnail"]);
-  const sourceCategory = textValue(item, ["categoryName", "categoryNameEn", "category", "productType"]);\n  if (!isRelevantForStore(name, sourceCategory)) return null;
+  const sourceCategory = textValue(item, ["categoryName", "categoryNameEn", "category", "productType"]);
+  if (!isRelevantForStore(name, sourceCategory)) return null;
   const rawPrice = textValue(item, ["sellPrice", "nowPrice", "price", "retailPrice", "salePrice"]);
   const amount = Number.parseFloat(rawPrice.replace(/[^0-9.,]/g, "").replace(",", ".").split("-")[0]);
   if (!supplierId || !name || !/^https:\/\/[^\s]+$/i.test(image) || !Number.isFinite(amount) || amount <= 0) return null;
