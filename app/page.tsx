@@ -10,12 +10,12 @@ const categories = [
 ];
 
 const demoProducts = [
-  { id: 1, name: "Rose Veil Eau de Parfum", type: "Perfume", price: "€—", image: "/products/beauty-edit.svg", tag: "THE SIGNATURE SCENT" },
-  { id: 2, name: "Soft Lace Lingerie Set", type: "Lingerie", price: "€—", image: "/products/fashion-edit.svg", tag: "COMFORT & CONFIDENCE" },
-  { id: 3, name: "Satin Sleepwear", type: "Lingerie", price: "€—", image: "/products/fashion-edit.svg", tag: "REST IN STYLE" },
-  { id: 4, name: "Velvet Rose Lip Colour", type: "Cosmetics", price: "€—", image: "/products/beauty-edit.svg", tag: "THE BEAUTY EDIT" },
-  { id: 5, name: "Classic Day Dress", type: "Women's Fashion", price: "€—", image: "/products/fashion-edit.svg", tag: "TIMELESS FEMININITY" },
-  { id: 6, name: "Daily Skin Ritual", type: "Cosmetics", price: "€—", image: "/products/beauty-edit.svg", tag: "A MOMENT FOR YOU" },
+  { id: 1, name: "Rose Veil Eau de Parfum", type: "Perfume", price: "39,00 €", image: "/products/beauty-edit.svg", tag: "PREVIEW · SIGNATURE SCENT" },
+  { id: 2, name: "Soft Lace Lingerie Set", type: "Lingerie", price: "34,00 €", image: "/products/fashion-edit.svg", tag: "PREVIEW · COMFORT & CONFIDENCE" },
+  { id: 3, name: "Satin Sleepwear", type: "Lingerie", price: "42,00 €", image: "/products/fashion-edit.svg", tag: "PREVIEW · REST IN STYLE" },
+  { id: 4, name: "Velvet Rose Lip Colour", type: "Cosmetics", price: "19,00 €", image: "/products/beauty-edit.svg", tag: "PREVIEW · THE BEAUTY EDIT" },
+  { id: 5, name: "Classic Day Dress", type: "Women's Fashion", price: "59,00 €", image: "/products/fashion-edit.svg", tag: "PREVIEW · TIMELESS FEMININITY" },
+  { id: 6, name: "Daily Skin Ritual", type: "Cosmetics", price: "28,00 €", image: "/products/beauty-edit.svg", tag: "PREVIEW · A MOMENT FOR YOU" },
 ];
 // Preview samples are intentionally not mixed into the live supplier catalog.
 const products: typeof demoProducts = [];
@@ -155,12 +155,19 @@ export default function HomePage() {
           return Number.isInteger(product.id) && typeof product.name === "string" && (product.type === "Women's Fashion" || product.type === "Lingerie" || product.type === "Perfume" || product.type === "Cosmetics") && typeof product.price === "string" && typeof product.image === "string" && typeof product.tag === "string";
         }) : [];
         if (!cancelled) {
-          setSupplierProducts(incoming.slice(0, 1000));
+          // Fail closed on supplier data, but keep the storefront visually complete with
+          // clearly labelled preview items when no approved live product survives validation.
+          setSupplierProducts((incoming.length ? incoming : demoProducts).slice(0, 1000));
+          setCatalogError(incoming.length ? "" : "No approved live products were returned. Showing preview items only; they are not for sale.");
           setCatalogHasMore(Boolean(payload.hasMore));
           setCatalogPage(Number(payload.page) || 1);
         }
       } catch {
-        if (!cancelled) setCatalogError("Supplier products will appear here after the supplier connection is configured.");
+        if (!cancelled) {
+          setSupplierProducts(demoProducts);
+          setCatalogHasMore(false);
+          setCatalogError("Live supplier catalog unavailable. Showing preview items only; they are not for sale.");
+        }
       } finally {
         if (!cancelled) setCatalogLoading(false);
       }
@@ -342,7 +349,7 @@ export default function HomePage() {
 
       <section className="edit-section section-pad" id="edit">
         <div className="section-heading-row"><div><span className="eyebrow">{t("curated")}</span><h2>{t("lovely")} <em>{t("chosen")}</em></h2></div><a href="#categories" className="text-button">{t("allCategories")}</a></div>
-        <div className="product-controls"><div className="filter-chips"><button className={showFavoritesOnly ? "filter-chip active" : "filter-chip"} onClick={() => setShowFavoritesOnly((value) => !value)}>{language === "AR" ? "المفضلة ♡" : language === "DE" ? "Favoriten ♡" : language === "TR" ? "Favoriler ♡" : language === "RU" ? "Избранное ♡" : language === "FR" ? "Favoris ♡" : "Favorites ♡"} ({favoriteIds.length})</button><button className={activeCategory === "All" && !showFavoritesOnly ? "filter-chip active" : "filter-chip"} onClick={() => { setActiveCategory("All"); setShowFavoritesOnly(false); }}>{categoryTranslations[language]?.All ?? t("all")}</button>{["Beauty","Fashion","Bags","Jewelry","Lingerie","Hair Care","Technology","Gifts","Watches","Body Care"].map((cat) => <button key={cat} className={activeCategory === cat ? "filter-chip active" : "filter-chip"} onClick={() => setActiveCategory(cat)}>{categoryTranslations[language]?.[cat] ?? cat}</button>)}</div><input id="product-search" className="product-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("search")} aria-label={language === "AR" ? "البحث في المنتجات التجريبية" : language === "DE" ? "Vorschauprodukte durchsuchen" : language === "TR" ? "Örnek ürünlerde ara" : language === "RU" ? "Поиск демонстрационных товаров" : language === "FR" ? "Rechercher dans les produits de démonstration" : "Search the product preview"} /></div>
+        <div className="product-controls"><div className="filter-chips"><button className={showFavoritesOnly ? "filter-chip active" : "filter-chip"} onClick={() => setShowFavoritesOnly((value) => !value)}>{language === "AR" ? "المفضلة ♡" : language === "DE" ? "Favoriten ♡" : language === "TR" ? "Favoriler ♡" : language === "RU" ? "Избранное ♡" : language === "FR" ? "Favoris ♡" : "Favorites ♡"} ({favoriteIds.length})</button><button className={activeCategory === "All" && !showFavoritesOnly ? "filter-chip active" : "filter-chip"} onClick={() => { setActiveCategory("All"); setShowFavoritesOnly(false); }}>{categoryTranslations[language]?.All ?? t("all")}</button>{categories.map((category) => <button key={category.name} className={activeCategory === category.name ? "filter-chip active" : "filter-chip"} onClick={() => { setActiveCategory(category.name); setShowFavoritesOnly(false); }}>{categoryTranslations[language]?.[category.name] ?? category.name}</button>)}</div><input id="product-search" className="product-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("search")} aria-label={language === "AR" ? "البحث في المنتجات التجريبية" : language === "DE" ? "Vorschauprodukte durchsuchen" : language === "TR" ? "Örnek ürünlerde ara" : language === "RU" ? "Поиск демонстрационных товаров" : language === "FR" ? "Rechercher dans les produits de démonstration" : "Search the product preview"} /></div>
         {catalogLoading && <p className="catalog-status" role="status">{language === "AR" ? "جارٍ التحقق من كتالوج الموردين…" : language === "DE" ? "Lieferantenkatalog wird geprüft…" : "Checking supplier catalog…"}</p>}
         {!catalogLoading && catalogError && <p className="catalog-status" role="status">{language === "AR" ? "ستظهر البضاعة الحقيقية بعد إعداد بيانات الربط الآلي للموردين." : catalogError}</p>}
         <div className="product-grid">
