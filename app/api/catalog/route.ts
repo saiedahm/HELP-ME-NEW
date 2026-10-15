@@ -32,10 +32,14 @@ function categoryOf(name: string, category: string): string {
   if (/gift/.test(value)) return "Gifts";
   return "Fashion";
 }
+function isRelevantForStore(name: string, category: string): boolean {
+  const value = `${name} ${category}`.toLowerCase();
+  return /women|woman|ladies|female|dress|skirt|blouse|shirt|top\b|pants|trousers|jeans|leggings|coat|jacket|cardigan|sweater|hoodie|fashion|clothing|apparel|lingerie|bra\b|briefs|underwear|sleepwear|pajama|nightwear|handbag|shoulder bag|tote bag|clutch|purse|wallet|crossbody|backpack|jewell|necklace|earring|bracelet|ring\b|watch|perfume|fragrance|makeup|cosmetic|skincare|beauty|lipstick|mascara|foundation|hair clip|hairbrush|hair care|lotion|body care|nail polish|phone case|phone holder|earbuds|headphone|jewelry box|gift|sunglasses|scarf|belt|shoe|sandal|heel|slipper|swimwear|sports bra|yoga wear/.test(value);
+}
 function normalize(item: RawProduct, supplier: string, usdToEur?: number): StoreProduct | null {
   const supplierId = firstText(item, ["pid", "id", "productId", "product_id", "sku", "productSku", "variantSku", "reference"]);
   const name = firstText(item, ["productNameEn", "nameEn", "name", "title", "productName", "product_name"]);
-  const image = firstText(item, ["bigImage", "productImage", "image", "imageUrl", "image_url", "mainImage", "thumbnail", "picture"]);
+  const image = firstText(item, ["bigImage", "productImage", "image", "imageUrl", "image_url", "mainImage", "thumbnail", "picture"]);\n  const sourceCategory = firstText(item, ["categoryName", "category", "categoryNameEn", "productType", "twoCategoryName", "threeCategoryName"]);\n  if (!isRelevantForStore(name, sourceCategory)) return null;
   const rawPrice = firstText(item, ["sellPrice", "nowPrice", "price", "retailPrice", "retail_price", "salePrice", "priceMin"]);
   const rawAmount = Number.parseFloat(rawPrice.replace(/[^0-9.,]/g, "").replace(",", ".").split("-")[0]);
   if (!supplierId || !name || !/^https?:\/\//i.test(image) || !Number.isFinite(rawAmount) || rawAmount <= 0) return null;
@@ -52,7 +56,7 @@ function normalize(item: RawProduct, supplier: string, usdToEur?: number): Store
   return {
     id: stableId(`${supplier}:${supplierId}`),
     name,
-    type: categoryOf(name, firstText(item, ["categoryName", "category", "categoryNameEn", "productType", "twoCategoryName", "threeCategoryName"])),
+    type: categoryOf(name, sourceCategory),
     price: new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(priceAmount),
     priceAmount,
     image,
