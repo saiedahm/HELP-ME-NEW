@@ -25,7 +25,7 @@ function isApprovedCatalogProduct(item: unknown): item is typeof demoProducts[nu
       !["Women's Fashion", "Lingerie", "Perfume", "Cosmetics"].includes(p.type) ||
       typeof p.price !== "string" || typeof p.image !== "string" || typeof p.tag !== "string") return false;
   const titleAndTags = (p.name + " " + p.tag).normalize("NFKC").toLowerCase();
-  if (/\\b(men|mens|men's|male|boys|boy|unisex|hardware|construction|tools?|drill|screw|bolt|plumbing|pipe|appliance|refrigerator|fridge|washing machine|electronics?|phone|headphones?|charger|battery|toy|pet|kitchen)\\b/.test(titleAndTags)) return false;
+  if (/\b(men|mens|men's|male|boys|boy|unisex|hardware|construction|tools?|drill|screw|bolt|plumbing|pipe|appliance|refrigerator|fridge|washing machine|electronics?|phone|headphones?|charger|battery|toy|pet|kitchen)\b/.test(titleAndTags)) return false;
   if (p.type === "Perfume") return /perfume|parfum|fragrance|scent|eau de parfum|eau de toilette|body mist/i.test(titleAndTags);
   if (p.type === "Cosmetics") return /makeup|cosmetic|skincare|skin care|lipstick|mascara|foundation|concealer|eyeliner|blush|serum|moistur|face cream|nail polish|beauty edit/i.test(titleAndTags);
   if (p.type === "Lingerie") return /lingerie|bra|briefs|panties|underwear|nightwear|nightgown|sleepwear|pajama|pyjama|lace/i.test(titleAndTags);
