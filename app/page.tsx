@@ -152,7 +152,7 @@ export default function HomePage() {
         const incoming = Array.isArray(payload.products) ? payload.products.filter((item): item is typeof demoProducts[number] => {
           if (!item || typeof item !== "object") return false;
           const product = item as Record<string, unknown>;
-          return Number.isInteger(product.id) && typeof product.name === "string" && typeof product.type === "string" && ["Women's Fashion", "Lingerie", "Perfume", "Cosmetics"].includes(product.type) && typeof product.price === "string" && typeof product.image === "string" && typeof product.tag === "string";
+          return Number.isInteger(product.id) && typeof product.name === "string" && (product.type === "Women's Fashion" || product.type === "Lingerie" || product.type === "Perfume" || product.type === "Cosmetics") && typeof product.price === "string" && typeof product.image === "string" && typeof product.tag === "string";
         }) : [];
         if (!cancelled) {
           setSupplierProducts(incoming.slice(0, 1000));
@@ -262,7 +262,7 @@ export default function HomePage() {
       const incoming = Array.isArray(payload.products) ? payload.products.filter((item): item is typeof demoProducts[number] => {
         if (!item || typeof item !== "object") return false;
         const product = item as Record<string, unknown>;
-        return Number.isInteger(product.id) && typeof product.name === "string" && typeof product.type === "string" && ["Women's Fashion", "Lingerie", "Perfume", "Cosmetics"].includes(product.type) && typeof product.price === "string" && typeof product.image === "string" && typeof product.tag === "string";
+        return Number.isInteger(product.id) && typeof product.name === "string" && (product.type === "Women's Fashion" || product.type === "Lingerie" || product.type === "Perfume" || product.type === "Cosmetics") && typeof product.price === "string" && typeof product.image === "string" && typeof product.tag === "string";
       }) : [];
       setSupplierProducts((current) => [...current, ...incoming.filter((product) => !current.some((existing) => existing.id === product.id))].slice(0, 1000));
       setCatalogPage(Number(payload.page) || nextPage);
