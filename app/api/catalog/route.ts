@@ -147,7 +147,7 @@ export async function GET(request: Request) {
       const offset = (requestedPage - 1) * 200;
       const approved = stored.filter((item) => {
         const type = categoryOf(item.name, item.type, item.tag);
-        return Boolean(type && APPROVED_TYPES.includes(type as typeof APPROVED_TYPES[number]) && Number.isFinite(item.priceAmount) && item.priceAmount > 0 && /^https?:\\/\\//i.test(item.image));
+        return Boolean(type && APPROVED_TYPES.includes(type as typeof APPROVED_TYPES[number]) && Number.isFinite(item.priceAmount) && item.priceAmount > 0 && /^https?:\/\//i.test(item.image));
       });
       if (approved.length > 0) {
       const products = approved.slice(offset, offset + 200).map((item) => ({
