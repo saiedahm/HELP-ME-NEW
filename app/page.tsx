@@ -17,6 +17,20 @@ const demoProducts = [
   { id: 5, name: "Classic Day Dress", type: "Women's Fashion", price: "59,00 €", image: "/products/fashion-edit.svg", tag: "PREVIEW · TIMELESS FEMININITY" },
   { id: 6, name: "Daily Skin Ritual", type: "Cosmetics", price: "28,00 €", image: "/products/beauty-edit.svg", tag: "PREVIEW · A MOMENT FOR YOU" },
 ];
+// Defence in depth: never render an item that does not match a women's fashion/beauty niche.
+function isApprovedCatalogProduct(item: unknown): item is typeof demoProducts[number] {
+  if (!item || typeof item !== "object") return false;
+  const p = item as Record<string, unknown>;
+  if (!Number.isInteger(p.id) || typeof p.name !== "string" || typeof p.type !== "string" ||
+      !["Women's Fashion", "Lingerie", "Perfume", "Cosmetics"].includes(p.type) ||
+      typeof p.price !== "string" || typeof p.image !== "string" || typeof p.tag !== "string") return false;
+  const titleAndTags = (p.name + " " + p.tag).normalize("NFKC").toLowerCase();
+  if (/\\b(men|mens|men's|male|boys|boy|unisex|hardware|construction|tools?|drill|screw|bolt|plumbing|pipe|appliance|refrigerator|fridge|washing machine|electronics?|phone|headphones?|charger|battery|toy|pet|kitchen)\\b/.test(titleAndTags)) return false;
+  if (p.type === "Perfume") return /perfume|parfum|fragrance|scent|eau de parfum|eau de toilette|body mist/i.test(titleAndTags);
+  if (p.type === "Cosmetics") return /makeup|cosmetic|skincare|skin care|lipstick|mascara|foundation|concealer|eyeliner|blush|serum|moistur|face cream|nail polish|beauty edit/i.test(titleAndTags);
+  if (p.type === "Lingerie") return /lingerie|bra|briefs|panties|underwear|nightwear|nightgown|sleepwear|pajama|pyjama|lace/i.test(titleAndTags);
+  return /dress|skirt|blouse|top|trousers|pants|jeans|leggings|coat|jacket|cardigan|sweater|fashion|clothing|apparel|shirt|swimwear|day dress/i.test(titleAndTags);
+}
 // Preview samples are intentionally not mixed into the live supplier catalog.
 const products: typeof demoProducts = [];
 
@@ -149,11 +163,7 @@ export default function HomePage() {
         const response = await fetch("/api/catalog", { cache: "no-store" });
         if (!response.ok) throw new Error("Supplier catalog is temporarily unavailable.");
         const payload = await response.json() as { products?: unknown; hasMore?: boolean; page?: number };
-        const incoming = Array.isArray(payload.products) ? payload.products.filter((item): item is typeof demoProducts[number] => {
-          if (!item || typeof item !== "object") return false;
-          const product = item as Record<string, unknown>;
-          return Number.isInteger(product.id) && typeof product.name === "string" && (product.type === "Women's Fashion" || product.type === "Lingerie" || product.type === "Perfume" || product.type === "Cosmetics") && typeof product.price === "string" && typeof product.image === "string" && typeof product.tag === "string";
-        }) : [];
+        const incoming = Array.isArray(payload.products) ? payload.products.filter(isApprovedCatalogProduct) : [];
         if (!cancelled) {
           // Fail closed on supplier data, but keep the storefront visually complete with
           // clearly labelled preview items when no approved live product survives validation.
@@ -266,11 +276,7 @@ export default function HomePage() {
       const response = await fetch(`/api/catalog?page=${nextPage}`, { cache: "no-store" });
       if (!response.ok) throw new Error("Could not load the next supplier page.");
       const payload = await response.json() as { products?: unknown; hasMore?: boolean; page?: number };
-      const incoming = Array.isArray(payload.products) ? payload.products.filter((item): item is typeof demoProducts[number] => {
-        if (!item || typeof item !== "object") return false;
-        const product = item as Record<string, unknown>;
-        return Number.isInteger(product.id) && typeof product.name === "string" && (product.type === "Women's Fashion" || product.type === "Lingerie" || product.type === "Perfume" || product.type === "Cosmetics") && typeof product.price === "string" && typeof product.image === "string" && typeof product.tag === "string";
-      }) : [];
+      const incoming = Array.isArray(payload.products) ? payload.products.filter(isApprovedCatalogProduct) : [];
       setSupplierProducts((current) => [...current, ...incoming.filter((product) => !current.some((existing) => existing.id === product.id))].slice(0, 1000));
       setCatalogPage(Number(payload.page) || nextPage);
       setCatalogHasMore(Boolean(payload.hasMore));
