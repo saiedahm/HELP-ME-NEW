@@ -20,28 +20,22 @@ function stableId(source: string): number {
   for (let i = 0; i < source.length; i++) hash = (hash * 31 + source.charCodeAt(i)) | 0;
   return Math.abs(hash) || 1;
 }
-function categoryOf(name: string, category: string): string {
-  const value = `${name} ${category}`.toLowerCase();
-  if (/lingerie|bra|brief|underwear|sleepwear/.test(value)) return "Lingerie";
-  if (/bag|handbag|purse|wallet/.test(value)) return "Bags";
-  if (/watch|jewell|jewel|necklace|earring|bracelet|ring/.test(value)) return /watch/.test(value) ? "Watches" : "Jewelry";
-  if (/perfume|fragrance|makeup|cosmetic|skincare|beauty|cream/.test(value)) return "Beauty";
-  if (/hair|shampoo|conditioner/.test(value)) return "Hair Care";
-  if (/body care|lotion|soap/.test(value)) return "Body Care";
-  if (/phone|wireless|headphone|electronic|tech/.test(value)) return "Technology";
-  if (/gift/.test(value)) return "Gifts";
-  return "Fashion";
-}
-function isRelevantForStore(name: string, category: string): boolean {
-  const value = `${name} ${category}`.toLowerCase();
-  return /women|woman|ladies|female|dress|skirt|blouse|shirt|top\b|pants|trousers|jeans|leggings|coat|jacket|cardigan|sweater|hoodie|fashion|clothing|apparel|lingerie|bra\b|briefs|underwear|sleepwear|pajama|nightwear|handbag|shoulder bag|tote bag|clutch|purse|wallet|crossbody|backpack|jewell|necklace|earring|bracelet|ring\b|watch|perfume|fragrance|makeup|cosmetic|skincare|beauty|lipstick|mascara|foundation|hair clip|hairbrush|hair care|lotion|body care|nail polish|phone case|phone holder|earbuds|headphone|jewelry box|gift|sunglasses|scarf|belt|shoe|sandal|heel|slipper|swimwear|sports bra|yoga wear/.test(value);
+function categoryOf(name: string, category: string): string | null {
+  const value = (name + " " + category).normalize("NFKC").toLowerCase();
+  if (/\b(men|mens|male|boys|unisex|electronics?|phone|wireless|headphones?|earbuds?|charger|battery|toy|pet|kitchen|car accessory)\b/.test(value)) return null;
+  if (/perfume|parfum|fragrance|eau de parfum|eau de toilette|body mist/.test(value)) return "Perfume";
+  if (/makeup|cosmetic|skincare|skin care|lipstick|mascara|foundation|concealer|eyeliner|blush|serum|moisturizer|moisturiser|face cream|nail polish/.test(value)) return "Cosmetics";
+  if (/lingerie|\bbra\b|bras\b|briefs|panties|underwear|nightwear|nightgown|sleepwear|pajama|pyjama/.test(value) && /women|woman|ladies|female|lingerie|underwear|nightwear|sleepwear|pajama|pyjama/.test(value)) return "Lingerie";
+  if (/women|woman|ladies|female/.test(value) && /dress|skirt|blouse|\btop\b|trousers|pants|jeans|leggings|coat|jacket|cardigan|sweater|fashion|clothing|apparel|shirt|swimwear/.test(value)) return "Women's Fashion";
+  return null;
 }
 function normalize(item: RawProduct, supplier: string, usdToEur?: number): StoreProduct | null {
   const supplierId = firstText(item, ["pid", "id", "productId", "product_id", "sku", "productSku", "variantSku", "reference"]);
   const name = firstText(item, ["productNameEn", "nameEn", "name", "title", "productName", "product_name"]);
   const image = firstText(item, ["bigImage", "productImage", "image", "imageUrl", "image_url", "mainImage", "thumbnail", "picture"]);
   const sourceCategory = firstText(item, ["categoryName", "category", "categoryNameEn", "productType", "twoCategoryName", "threeCategoryName"]);
-  if (!isRelevantForStore(name, sourceCategory)) return null;
+  const productType = categoryOf(name, sourceCategory);
+  if (!productType) return null;
   const rawPrice = firstText(item, ["sellPrice", "nowPrice", "price", "retailPrice", "retail_price", "salePrice", "priceMin"]);
   const rawAmount = Number.parseFloat(rawPrice.replace(/[^0-9.,]/g, "").replace(",", ".").split("-")[0]);
   if (!supplierId || !name || !/^https?:\/\//i.test(image) || !Number.isFinite(rawAmount) || rawAmount <= 0) return null;
@@ -58,7 +52,7 @@ function normalize(item: RawProduct, supplier: string, usdToEur?: number): Store
   return {
     id: stableId(`${supplier}:${supplierId}`),
     name,
-    type: categoryOf(name, sourceCategory),
+    type: productType,
     price: new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(priceAmount),
     priceAmount,
     image,
@@ -139,7 +133,7 @@ export async function GET(request: Request) {
   // Prefer the persistent catalog populated by the scheduled supplier sync.
   try {
     const stored = await prisma.storeProduct.findMany({
-      where: { active: true },
+      where: { active: true, type: { in: ["Women's Fashion", "Lingerie", "Perfume", "Cosmetics"] } },
       orderBy: { updatedAt: "desc" },
       take: 1000
     });
