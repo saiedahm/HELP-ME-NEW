@@ -25,11 +25,11 @@ const APPROVED_TYPES = ["Women's Fashion", "Lingerie", "Perfume", "Cosmetics"] a
 function categoryOf(name: string, category: string, tags = ""): string | null {
   const value = (name + " " + category + " " + tags).normalize("NFKC").toLowerCase();
   // Any clear non-boutique signal overrides positive matches.
-  if (/\\b(men|mens|men's|male|boys|boy|unisex|electronics?|hardware|construction|tools?|drill|screw|bolt|plumbing|pipe|appliance|refrigerator|fridge|washing machine|phone|wireless|headphones?|earbuds?|charger|battery|toy|pet|kitchen|car accessory)\\b/.test(value)) return null;
+  if (/\b(men|mens|men's|male|boys|boy|unisex|electronics?|hardware|construction|tools?|drill|screw|bolt|plumbing|pipe|appliance|refrigerator|fridge|washing machine|phone|wireless|headphones?|earbuds?|charger|battery|toy|pet|kitchen|car accessory)\b/.test(value)) return null;
   if (/perfume|parfum|fragrance|eau de parfum|eau de toilette|body mist/.test(value)) return "Perfume";
   if (/makeup|cosmetic|skincare|skin care|lipstick|mascara|foundation|concealer|eyeliner|blush|serum|moisturizer|moisturiser|face cream|nail polish/.test(value)) return "Cosmetics";
-  if (/lingerie|\\bbra\\b|bras\\b|briefs|panties|underwear|nightwear|nightgown|sleepwear|pajama|pyjama/.test(value) && /women|woman|ladies|female|lingerie|underwear|nightwear|sleepwear|pajama|pyjama/.test(value)) return "Lingerie";
-  if (/women'?s clothing|women'?s fashion|women|woman|ladies|female/.test(value) && /dress|skirt|blouse|\\btop\\b|trousers|pants|jeans|leggings|coat|jacket|cardigan|sweater|fashion|clothing|apparel|shirt|swimwear/.test(value)) return "Women's Fashion";
+  if (/lingerie|\bbra\b|bras\b|briefs|panties|underwear|nightwear|nightgown|sleepwear|pajama|pyjama/.test(value) && /women|woman|ladies|female|lingerie|underwear|nightwear|sleepwear|pajama|pyjama/.test(value)) return "Lingerie";
+  if (/women'?s clothing|women'?s fashion|women|woman|ladies|female/.test(value) && /dress|skirt|blouse|\btop\b|trousers|pants|jeans|leggings|coat|jacket|cardigan|sweater|fashion|clothing|apparel|shirt|swimwear/.test(value)) return "Women's Fashion";
   return null;
 }
 function normalize(item: RawProduct, supplier: string, usdToEur?: number): StoreProduct | null {
