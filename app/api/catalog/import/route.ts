@@ -15,13 +15,14 @@ function pick(item: InputProduct, keys: string[]): string {
   }
   return "";
 }
-function categoryOf(name: string, category: string): string | null {
-  const value = (name + " " + category).normalize("NFKC").toLowerCase();
-  if (/\b(men|mens|male|boys|unisex|electronics?|phone|wireless|headphones?|earbuds?|charger|battery|toy|pet|kitchen|car accessory)\b/.test(value)) return null;
+const APPROVED_TYPES = ["Women's Fashion", "Lingerie", "Perfume", "Cosmetics"] as const;
+function categoryOf(name: string, category: string, tags = ""): string | null {
+  const value = (name + " " + category + " " + tags).normalize("NFKC").toLowerCase();
+  if (/\\b(men|mens|men's|male|boys|boy|unisex|electronics?|hardware|construction|tools?|drill|screw|bolt|plumbing|pipe|appliance|refrigerator|fridge|washing machine|phone|wireless|headphones?|earbuds?|charger|battery|toy|pet|kitchen|car accessory)\\b/.test(value)) return null;
   if (/perfume|parfum|fragrance|eau de parfum|eau de toilette|body mist/.test(value)) return "Perfume";
   if (/makeup|cosmetic|skincare|skin care|lipstick|mascara|foundation|concealer|eyeliner|blush|serum|moisturizer|moisturiser|face cream|nail polish/.test(value)) return "Cosmetics";
-  if (/lingerie|\bbra\b|bras\b|briefs|panties|underwear|nightwear|nightgown|sleepwear|pajama|pyjama/.test(value) && /women|woman|ladies|female|lingerie|underwear|nightwear|sleepwear|pajama|pyjama/.test(value)) return "Lingerie";
-  if (/women'?s clothing|women'?s fashion|women|woman|ladies|female/.test(value) && /dress|skirt|blouse|\btop\b|trousers|pants|jeans|leggings|coat|jacket|cardigan|sweater|fashion|clothing|apparel|shirt|swimwear/.test(value)) return "Women's Fashion";
+  if (/lingerie|\\bbra\\b|bras\\b|briefs|panties|underwear|nightwear|nightgown|sleepwear|pajama|pyjama/.test(value) && /women|woman|ladies|female|lingerie|underwear|nightwear|sleepwear|pajama|pyjama/.test(value)) return "Lingerie";
+  if (/women'?s clothing|women'?s fashion|women|woman|ladies|female/.test(value) && /dress|skirt|blouse|\\btop\\b|trousers|pants|jeans|leggings|coat|jacket|cardigan|sweater|fashion|clothing|apparel|shirt|swimwear/.test(value)) return "Women's Fashion";
   return null;
 }
 async function getUsdPerEur(): Promise<number> {
@@ -46,10 +47,12 @@ export async function POST(request: Request) {
     const currency = typeof body.currency === "string" ? body.currency.toUpperCase() : "USD";
     if (!["USD", "EUR"].includes(currency)) return NextResponse.json({ success: false, message: "Currency must be USD or EUR." }, { status: 400 });
     const usdPerEur = currency === "USD" ? await getUsdPerEur() : 1;
-    // Clean only the store-product catalog: retain records belonging to the four approved boutique niches.
-    const cleanup = await prisma.storeProduct.deleteMany({
-      where: { type: { notIn: ["Women's Fashion", "Lingerie", "Perfume", "Cosmetics"] } }
-    });
+    // Purge non-boutique legacy products using the same title/category/tag rules as the feed.
+    const existing = await prisma.storeProduct.findMany({ select: { id: true, name: true, type: true, tag: true } });
+    const invalidIds = existing.filter((product) => !categoryOf(product.name, product.type, product.tag)).map((product) => product.id);
+    const cleanup = invalidIds.length
+      ? await prisma.storeProduct.deleteMany({ where: { id: { in: invalidIds } } })
+      : { count: 0 };
     const now = new Date();
     let imported = 0;
     let rejected = 0;
@@ -60,7 +63,8 @@ export async function POST(request: Request) {
       const name = pick(item, ["title", "productNameEn", "productName", "name"]);
       const image = pick(item, ["image", "productImage", "bigImage", "imageUrl"]);
       const sourceCategory = pick(item, ["category", "categoryName", "categoryNameEn", "productType", "twoCategoryName", "threeCategoryName"]);
-      const productType = categoryOf(name, sourceCategory);
+      const sourceTags = pick(item, ["tags", "tag", "keywords", "description"]);
+      const productType = categoryOf(name, sourceCategory, sourceTags);
       if (!productType) { rejected++; continue; }
       const rawPrice = pick(item, ["price", "sellPrice", "nowPrice", "retailPrice", "priceMin"]);
       const amount = Number.parseFloat(rawPrice.replace(/[^0-9.,]/g, "").replace(",", ".").split("-")[0]);
