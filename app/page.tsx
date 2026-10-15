@@ -31,11 +31,29 @@ function isApprovedCatalogProduct(item: unknown): item is typeof demoProducts[nu
       !["Women's Fashion", "Lingerie", "Perfume", "Cosmetics"].includes(p.type) ||
       typeof p.price !== "string" || typeof p.image !== "string" || typeof p.tag !== "string") return false;
   const titleAndTags = (p.name + " " + p.tag).normalize("NFKC").toLowerCase();
-  if (/\b(men|mens|men's|male|boys|boy|unisex|hardware|construction|tools?|drill|screw|bolt|plumbing|pipe|appliance|refrigerator|fridge|washing machine|electronics?|phone|headphones?|charger|battery|toy|pet|kitchen)\b/.test(titleAndTags)) return false;
+  if (/\\b(men|mens|men's|male|boys|boy|unisex|hardware|construction|tools?|drill|screw|bolt|plumbing|pipe|appliance|refrigerator|fridge|washing machine|electronics?|phone|headphones?|charger|battery|toy|pet|kitchen)\\b/.test(titleAndTags)) return false;
   if (p.type === "Perfume") return /perfume|parfum|fragrance|scent|eau de parfum|eau de toilette|body mist/i.test(titleAndTags);
   if (p.type === "Cosmetics") return /makeup|cosmetic|skincare|skin care|lipstick|mascara|foundation|concealer|eyeliner|blush|serum|moistur|face cream|nail polish|beauty edit/i.test(titleAndTags);
   if (p.type === "Lingerie") return /lingerie|bra|briefs|panties|underwear|nightwear|nightgown|sleepwear|pajama|pyjama|lace/i.test(titleAndTags);
   return /dress|skirt|blouse|top|trousers|pants|jeans|leggings|coat|jacket|cardigan|sweater|fashion|clothing|apparel|shirt|swimwear|day dress/i.test(titleAndTags);
+}
+function productDescription(product: typeof demoProducts[number]): string {
+  if (typeof product.description === "string" && product.description.trim()) return product.description;
+  switch (product.type) {
+    case "Women's Fashion": return "A curated women's fashion preview item. Materials, sizing, care details and supplier availability must be confirmed before sale.";
+    case "Lingerie": return "A lingerie and nightwear preview item. Fabric composition, fit, size chart and stock remain unconfirmed until supplier verification.";
+    case "Perfume": return "A fragrance preview item. Brand authenticity, scent notes, bottle volume and supplier availability have not yet been verified.";
+    default: return "A beauty preview item. Ingredients, claims, responsible-person details and regulatory documentation must be verified before sale.";
+  }
+}
+function withCatalogCoverage(items: typeof demoProducts): typeof demoProducts {
+  const covered = new Set(items.map((item) => item.type));
+  const missing = demoProducts.filter((item) => !covered.has(item.type)).map((item) => ({
+    ...item,
+    id: -1000 - item.id,
+    description: productDescription(item),
+  }));
+  return [...items.map((item) => ({ ...item, description: productDescription(item) })), ...missing];
 }
 // Preview samples are intentionally not mixed into the live supplier catalog.
 const products: typeof demoProducts = demoProducts;
@@ -173,7 +191,7 @@ export default function HomePage() {
         if (!cancelled) {
           // Fail closed on supplier data, but keep the storefront visually complete with
           // clearly labelled preview items when no approved live product survives validation.
-          setSupplierProducts((incoming.length ? incoming : demoProducts).slice(0, 1000));
+          setSupplierProducts(withCatalogCoverage(incoming.length ? incoming : demoProducts).slice(0, 1000));
           setCatalogError(incoming.length ? "" : "No approved live products were returned. Showing preview items only; they are not for sale.");
           setCatalogHasMore(Boolean(payload.hasMore));
           setCatalogPage(Number(payload.page) || 1);
@@ -283,7 +301,7 @@ export default function HomePage() {
       if (!response.ok) throw new Error("Could not load the next supplier page.");
       const payload = await response.json() as { products?: unknown; hasMore?: boolean; page?: number };
       const incoming = Array.isArray(payload.products) ? payload.products.filter(isApprovedCatalogProduct) : [];
-      setSupplierProducts((current) => [...current, ...incoming.filter((product) => !current.some((existing) => existing.id === product.id))].slice(0, 1000));
+      setSupplierProducts((current) => withCatalogCoverage([...current.filter((product) => product.id > 0), ...incoming.filter((product) => !current.some((existing) => existing.id === product.id))]).slice(0, 1000));
       setCatalogPage(Number(payload.page) || nextPage);
       setCatalogHasMore(Boolean(payload.hasMore));
       setVisibleCount((count) => Math.min(count + 24, 1000));
