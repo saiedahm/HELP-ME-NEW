@@ -35,6 +35,12 @@ function categoryOf(name: string, category: string): string {
   return "Fashion";
 }
 
+function isRelevantForStore(name: string, category: string): boolean {
+  const value = `${name} ${category}`.toLowerCase();
+  // Keep the storefront focused on women's fashion, beauty, accessories, gifts and small personal tech.
+  return /women|woman|ladies|female|dress|skirt|blouse|shirt|top\b|pants|trousers|jeans|leggings|coat|jacket|cardigan|sweater|hoodie|fashion|clothing|apparel|lingerie|bra\b|briefs|underwear|sleepwear|pajama|nightwear|handbag|shoulder bag|tote bag|clutch|purse|wallet|crossbody|backpack|jewell|necklace|earring|bracelet|ring\b|watch|perfume|fragrance|makeup|cosmetic|skincare|beauty|lipstick|mascara|foundation|hair clip|hairbrush|hair care|lotion|body care|nail polish|phone case|phone holder|earbuds|headphone|jewelry box|gift|sunglasses|scarf|belt|shoe|sandal|heel|slipper|swimwear|sports bra|yoga wear/.test(value);
+}
+
 function extractProducts(payload: unknown): { items: CJProduct[]; totalPages: number } {
   if (!payload || typeof payload !== "object") return { items: [], totalPages: 1 };
   const root = payload as Record<string, unknown>;
@@ -70,7 +76,7 @@ async function getUsdPerEur(): Promise<number> {
 function normalize(item: CJProduct, usdPerEur: number, now: Date): NormalizedProduct | null {
   const supplierId = textValue(item, ["pid", "productId", "product_id", "id", "productSku", "sku"]);
   const name = textValue(item, ["productNameEn", "nameEn", "productName", "name", "title"]);
-  const image = textValue(item, ["bigImage", "productImage", "image", "imageUrl", "mainImage", "thumbnail"]);
+  const image = textValue(item, ["bigImage", "productImage", "image", "imageUrl", "mainImage", "thumbnail"]);\n  const sourceCategory = textValue(item, ["categoryName", "categoryNameEn", "category", "productType"]);\n  if (!isRelevantForStore(name, sourceCategory)) return null;
   const rawPrice = textValue(item, ["sellPrice", "nowPrice", "price", "retailPrice", "salePrice"]);
   const amount = Number.parseFloat(rawPrice.replace(/[^0-9.,]/g, "").replace(",", ".").split("-")[0]);
   if (!supplierId || !name || !/^https:\/\/[^\s]+$/i.test(image) || !Number.isFinite(amount) || amount <= 0) return null;
@@ -80,7 +86,7 @@ function normalize(item: CJProduct, usdPerEur: number, now: Date): NormalizedPro
   if (!Number.isFinite(priceAmount) || priceAmount <= 0) return null;
   return {
     supplier: "CJdropshipping", supplierId, name: name.slice(0, 240),
-    type: categoryOf(name, textValue(item, ["categoryName", "categoryNameEn", "category", "productType"])),
+    type: categoryOf(name, sourceCategory),
     price: new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(priceAmount),
     priceAmount, image, tag: "CJ COLLECTION", cost,
     active: true, syncedAt: now, updatedAt: now
