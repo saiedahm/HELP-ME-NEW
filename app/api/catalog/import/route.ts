@@ -15,18 +15,14 @@ function pick(item: InputProduct, keys: string[]): string {
   }
   return "";
 }
-function categoryOf(name: string, category: string): string {
-  const value = `${name} ${category}`.toLowerCase();
-  if (/lingerie|bra|brief|underwear|sleepwear/.test(value)) return "Lingerie";
-  if (/bag|handbag|purse|wallet/.test(value)) return "Bags";
-  if (/watch/.test(value)) return "Watches";
-  if (/jewell|necklace|earring|bracelet|ring/.test(value)) return "Jewelry";
-  if (/perfume|fragrance|makeup|cosmetic|skincare|beauty|cream/.test(value)) return "Beauty";
-  if (/hair|shampoo|conditioner/.test(value)) return "Hair Care";
-  if (/body care|lotion|soap/.test(value)) return "Body Care";
-  if (/phone|wireless|headphone|electronic|tech/.test(value)) return "Technology";
-  if (/gift/.test(value)) return "Gifts";
-  return "Fashion";
+function categoryOf(name: string, category: string): string | null {
+  const value = (name + " " + category).normalize("NFKC").toLowerCase();
+  if (/\b(men|mens|male|boys|unisex|electronics?|phone|wireless|headphones?|earbuds?|charger|battery|toy|pet|kitchen|car accessory)\b/.test(value)) return null;
+  if (/perfume|parfum|fragrance|eau de parfum|eau de toilette|body mist/.test(value)) return "Perfume";
+  if (/makeup|cosmetic|skincare|skin care|lipstick|mascara|foundation|concealer|eyeliner|blush|serum|moisturizer|moisturiser|face cream|nail polish/.test(value)) return "Cosmetics";
+  if (/lingerie|\bbra\b|bras\b|briefs|panties|underwear|nightwear|nightgown|sleepwear|pajama|pyjama/.test(value) && /women|woman|ladies|female|lingerie|underwear|nightwear|sleepwear|pajama|pyjama/.test(value)) return "Lingerie";
+  if (/women'?s clothing|women'?s fashion|women|woman|ladies|female/.test(value) && /dress|skirt|blouse|\btop\b|trousers|pants|jeans|leggings|coat|jacket|cardigan|sweater|fashion|clothing|apparel|shirt|swimwear/.test(value)) return "Women's Fashion";
+  return null;
 }
 async function getUsdPerEur(): Promise<number> {
   const response = await fetch("https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml", { cache: "no-store", signal: AbortSignal.timeout(8000) });
@@ -59,7 +55,10 @@ export async function POST(request: Request) {
       const supplierId = pick(item, ["id", "pid", "productId", "product_id", "sku", "productSku"]);
       const name = pick(item, ["title", "productNameEn", "productName", "name"]);
       const image = pick(item, ["image", "productImage", "bigImage", "imageUrl"]);
-      const rawPrice = pick(item, ["price", "sellPrice", "nowPrice", "retailPrice"]);
+      const sourceCategory = pick(item, ["category", "categoryName", "categoryNameEn", "productType", "twoCategoryName", "threeCategoryName"]);
+      const productType = categoryOf(name, sourceCategory);
+      if (!productType) { rejected++; continue; }
+      const rawPrice = pick(item, ["price", "sellPrice", "nowPrice", "retailPrice", "priceMin"]);
       const amount = Number.parseFloat(rawPrice.replace(/[^0-9.,]/g, "").replace(",", ".").split("-")[0]);
       if (!supplierId || !name || !/^https:\/\/[^\s]+$/i.test(image) || !Number.isFinite(amount) || amount <= 0) { rejected++; continue; }
       const cost = currency === "USD" ? Math.round(amount / usdPerEur * 100) / 100 : Math.round(amount * 100) / 100;
@@ -69,12 +68,12 @@ export async function POST(request: Request) {
       await prisma.storeProduct.upsert({
         where: { supplier_supplierId: { supplier, supplierId } },
         create: {
-          supplier, supplierId, name: name.slice(0, 240), type: categoryOf(name, pick(item, ["category", "categoryName"])),
+          supplier, supplierId, name: name.slice(0, 240), type: productType,
           price: new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(priceAmount),
           priceAmount, image, tag: "CJ COLLECTION", cost, active: true, syncedAt: now, updatedAt: now
         },
         update: {
-          name: name.slice(0, 240), type: categoryOf(name, pick(item, ["category", "categoryName"])),
+          name: name.slice(0, 240), type: productType,
           price: new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(priceAmount),
           priceAmount, image, tag: "CJ COLLECTION", cost, active: true, syncedAt: now, updatedAt: now
         }
