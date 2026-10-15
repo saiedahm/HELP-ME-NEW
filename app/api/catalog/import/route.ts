@@ -46,6 +46,10 @@ export async function POST(request: Request) {
     const currency = typeof body.currency === "string" ? body.currency.toUpperCase() : "USD";
     if (!["USD", "EUR"].includes(currency)) return NextResponse.json({ success: false, message: "Currency must be USD or EUR." }, { status: 400 });
     const usdPerEur = currency === "USD" ? await getUsdPerEur() : 1;
+    // Clean only the store-product catalog: retain records belonging to the four approved boutique niches.
+    const cleanup = await prisma.storeProduct.deleteMany({
+      where: { type: { notIn: ["Women's Fashion", "Lingerie", "Perfume", "Cosmetics"] } }
+    });
     const now = new Date();
     let imported = 0;
     let rejected = 0;
@@ -80,7 +84,7 @@ export async function POST(request: Request) {
       });
       imported++;
     }
-    return NextResponse.json({ success: true, imported, rejected, currency, markupPercent: 40, message: "Batch imported into the persistent catalog." });
+    return NextResponse.json({ success: true, imported, rejected, removedIrrelevant: cleanup.count, currency, markupPercent: 40, message: "Batch imported into the filtered boutique catalog." });
   } catch (error) {
     console.error("Catalog JSON import failed:", error);
     return NextResponse.json({ success: false, message: "Import failed. Check the JSON format and database connection." }, { status: 500 });
