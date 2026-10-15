@@ -149,6 +149,7 @@ export async function GET(request: Request) {
         const type = categoryOf(item.name, item.type, item.tag);
         return Boolean(type && APPROVED_TYPES.includes(type as typeof APPROVED_TYPES[number]) && Number.isFinite(item.priceAmount) && item.priceAmount > 0 && /^https?:\\/\\//i.test(item.image));
       });
+      if (approved.length > 0) {
       const products = approved.slice(offset, offset + 200).map((item) => ({
         id: stableId(`${item.supplier}:${item.supplierId}`),
         name: item.name,
@@ -171,6 +172,7 @@ export async function GET(request: Request) {
         },
         errors: []
       }, { headers: { "Cache-Control": "no-store" } });
+      }
     }
   } catch (error) {
     console.error("Persistent product catalog unavailable; trying live supplier feed:", error);
