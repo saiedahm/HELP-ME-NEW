@@ -203,3 +203,72 @@ img{max-width:100%}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+/* HELP-ME romantic editorial refresh — resilient, mobile-first luxury styling */
+:root{
+  --helpme-rosewood:#3b2523;
+  --helpme-rose:#d7aaa0;
+  --helpme-champagne:#f3e2d4;
+  --helpme-gold:#b58a51;
+}
+.storefront{background:linear-gradient(180deg,#fffaf6 0%,#fbf3ed 42%,#fffaf6 100%)}
+.site-header{background:rgba(255,250,246,.96);backdrop-filter:blur(14px)}
+.hero{
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(ellipse at 8% 8%,rgba(211,170,154,.25),transparent 40%),
+    linear-gradient(125deg,#fbf2ec 0%,#f3e2d6 52%,#e5c8bb 100%);
+}
+.hero-copy{z-index:1}
+.hero .eyebrow{color:#9a7446}
+.hero h1{font-size:clamp(46px,6.3vw,92px);line-height:.98;letter-spacing:-.045em}
+.hero h1 em{color:#98604e;text-shadow:0 8px 30px rgba(145,91,68,.12)}
+.hero-subtitle{color:#a37a4c}
+.hero-photo{
+  background-color:#e6d1c4;
+  background-image:
+    linear-gradient(180deg,rgba(40,24,20,.02),rgba(40,24,20,.12)),
+    url('/products/fashion-edit.svg');
+  background-position:center;
+  background-size:cover;
+  transition:filter .5s ease,background-position .8s ease;
+}
+.hero-photo:hover{filter:saturate(1.04)}
+.photo-caption{background:linear-gradient(90deg,rgba(36,22,19,.38),transparent);padding:18px 20px;border-left:1px solid rgba(229,195,145,.8)}
+.editorial-banner{background:linear-gradient(120deg,#f4e2d8,#fff7f0 75%);overflow:hidden}
+.editorial-image{
+  background-color:#e8d3c7;
+  background-image:linear-gradient(135deg,rgba(44,26,21,.04),rgba(44,26,21,.15)),url('/products/beauty-edit.svg');
+  background-size:cover;
+  background-position:center;
+}
+.product-grid{align-items:start}
+.product-card{height:100%;min-width:0}
+.product-image-wrap{border:1px solid rgba(181,138,81,.17);border-radius:2px}
+.product-image{object-fit:cover}
+.product-info h3{line-height:1.35;overflow-wrap:anywhere}
+.product-bottom{gap:8px;flex-wrap:wrap}
+.product-bottom b{white-space:nowrap}
+.empty-state{border:1px solid #ead8cb;background:rgba(255,250,246,.8);margin:18px 0;padding:28px 20px;line-height:1.8}
+.product-detail-image{background:#f4e4db;object-fit:cover}
+.product-detail-copy>p{line-height:1.8}
+@media (prefers-reduced-motion:reduce){
+  .product-card,.product-image,.hero-photo,.category-card,.primary-button{transition:none!important;animation:none!important}
+  .product-card:hover,.product-image:hover,.category-card:hover,.primary-button:hover{transform:none!important}
+}
+@media(max-width:760px){
+  .hero{background:linear-gradient(145deg,#fbf2ec 0%,#f2dfd4 100%)}
+  .hero h1{font-size:clamp(42px,10vw,64px);line-height:1.02}
+  .hero-photo{background-position:center 32%;min-height:340px}
+  .editorial-image{min-height:290px}
+  .product-grid{gap:22px 12px}
+  .product-image-wrap{aspect-ratio:4/5}
+  .product-info h3{min-height:0;font-size:clamp(14px,3.8vw,17px)}
+  .product-bottom{align-items:center}
+}
+@media(max-width:390px){
+  .hero h1{font-size:clamp(38px,11vw,48px)}
+  .product-grid{gap:20px 10px}
+  .product-tag{max-width:calc(100% - 20px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+}
