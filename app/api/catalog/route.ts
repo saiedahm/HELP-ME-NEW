@@ -40,7 +40,8 @@ function normalize(item: RawProduct, supplier: string, usdToEur?: number): Store
   const supplierId = firstText(item, ["pid", "id", "productId", "product_id", "sku", "productSku", "variantSku", "reference"]);
   const name = firstText(item, ["productNameEn", "nameEn", "name", "title", "productName", "product_name"]);
   const image = firstText(item, ["bigImage", "productImage", "image", "imageUrl", "image_url", "mainImage", "thumbnail", "picture"]);
-  const sourceCategory = firstText(item, ["categoryName", "category", "categoryNameEn", "productType", "twoCategoryName", "threeCategoryName"]);\n  if (!isRelevantForStore(name, sourceCategory)) return null;
+  const sourceCategory = firstText(item, ["categoryName", "category", "categoryNameEn", "productType", "twoCategoryName", "threeCategoryName"]);
+  if (!isRelevantForStore(name, sourceCategory)) return null;
   const rawPrice = firstText(item, ["sellPrice", "nowPrice", "price", "retailPrice", "retail_price", "salePrice", "priceMin"]);
   const rawAmount = Number.parseFloat(rawPrice.replace(/[^0-9.,]/g, "").replace(",", ".").split("-")[0]);
   if (!supplierId || !name || !/^https?:\/\//i.test(image) || !Number.isFinite(rawAmount) || rawAmount <= 0) return null;
