@@ -92,6 +92,16 @@ async function runSync(request: Request) {
   if (!secret || request.headers.get("authorization") !== `Bearer ${secret}`) {
     return NextResponse.json({ success: false, message: "Unauthorized or CRON_SECRET is not configured." }, { status: 401 });
   }
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) {
+    console.error("Scheduled supplier sync blocked: DATABASE_URL is missing in the deployment environment.");
+    return NextResponse.json({
+      success: false,
+      code: "DATABASE_URL_MISSING",
+      message: "Product sync cannot save products because DATABASE_URL is not configured for this deployment."
+    }, { status: 503 });
+  }
+
   const apiKey = process.env.CJ_API_KEY;
   if (!apiKey) return NextResponse.json({ success: false, message: "CJ_API_KEY is not configured." }, { status: 503 });
 
