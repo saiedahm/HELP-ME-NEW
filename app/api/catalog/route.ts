@@ -20,13 +20,16 @@ function stableId(source: string): number {
   for (let i = 0; i < source.length; i++) hash = (hash * 31 + source.charCodeAt(i)) | 0;
   return Math.abs(hash) || 1;
 }
-function categoryOf(name: string, category: string): string | null {
-  const value = (name + " " + category).normalize("NFKC").toLowerCase();
-  if (/\b(men|mens|male|boys|unisex|electronics?|phone|wireless|headphones?|earbuds?|charger|battery|toy|pet|kitchen|car accessory)\b/.test(value)) return null;
+const APPROVED_TYPES = ["Women's Fashion", "Lingerie", "Perfume", "Cosmetics"] as const;
+
+function categoryOf(name: string, category: string, tags = ""): string | null {
+  const value = (name + " " + category + " " + tags).normalize("NFKC").toLowerCase();
+  // Any clear non-boutique signal overrides positive matches.
+  if (/\\b(men|mens|men's|male|boys|boy|unisex|electronics?|hardware|construction|tools?|drill|screw|bolt|plumbing|pipe|appliance|refrigerator|fridge|washing machine|phone|wireless|headphones?|earbuds?|charger|battery|toy|pet|kitchen|car accessory)\\b/.test(value)) return null;
   if (/perfume|parfum|fragrance|eau de parfum|eau de toilette|body mist/.test(value)) return "Perfume";
   if (/makeup|cosmetic|skincare|skin care|lipstick|mascara|foundation|concealer|eyeliner|blush|serum|moisturizer|moisturiser|face cream|nail polish/.test(value)) return "Cosmetics";
-  if (/lingerie|\bbra\b|bras\b|briefs|panties|underwear|nightwear|nightgown|sleepwear|pajama|pyjama/.test(value) && /women|woman|ladies|female|lingerie|underwear|nightwear|sleepwear|pajama|pyjama/.test(value)) return "Lingerie";
-  if (/women|woman|ladies|female/.test(value) && /dress|skirt|blouse|\btop\b|trousers|pants|jeans|leggings|coat|jacket|cardigan|sweater|fashion|clothing|apparel|shirt|swimwear/.test(value)) return "Women's Fashion";
+  if (/lingerie|\\bbra\\b|bras\\b|briefs|panties|underwear|nightwear|nightgown|sleepwear|pajama|pyjama/.test(value) && /women|woman|ladies|female|lingerie|underwear|nightwear|sleepwear|pajama|pyjama/.test(value)) return "Lingerie";
+  if (/women'?s clothing|women'?s fashion|women|woman|ladies|female/.test(value) && /dress|skirt|blouse|\\btop\\b|trousers|pants|jeans|leggings|coat|jacket|cardigan|sweater|fashion|clothing|apparel|shirt|swimwear/.test(value)) return "Women's Fashion";
   return null;
 }
 function normalize(item: RawProduct, supplier: string, usdToEur?: number): StoreProduct | null {
@@ -34,7 +37,8 @@ function normalize(item: RawProduct, supplier: string, usdToEur?: number): Store
   const name = firstText(item, ["productNameEn", "nameEn", "name", "title", "productName", "product_name"]);
   const image = firstText(item, ["bigImage", "productImage", "image", "imageUrl", "image_url", "mainImage", "thumbnail", "picture"]);
   const sourceCategory = firstText(item, ["categoryName", "category", "categoryNameEn", "productType", "twoCategoryName", "threeCategoryName"]);
-  const productType = categoryOf(name, sourceCategory);
+  const sourceTags = firstText(item, ["tags", "tag", "keywords", "attributes", "description"]);
+  const productType = categoryOf(name, sourceCategory, sourceTags);
   if (!productType) return null;
   const rawPrice = firstText(item, ["sellPrice", "nowPrice", "price", "retailPrice", "retail_price", "salePrice", "priceMin"]);
   const rawAmount = Number.parseFloat(rawPrice.replace(/[^0-9.,]/g, "").replace(",", ".").split("-")[0]);
@@ -133,7 +137,7 @@ export async function GET(request: Request) {
   // Prefer the persistent catalog populated by the scheduled supplier sync.
   try {
     const stored = await prisma.storeProduct.findMany({
-      where: { active: true, type: { in: ["Women's Fashion", "Lingerie", "Perfume", "Cosmetics"] } },
+      where: { active: true, type: { in: [...APPROVED_TYPES] } },
       orderBy: { updatedAt: "desc" },
       take: 1000
     });
@@ -141,11 +145,15 @@ export async function GET(request: Request) {
       const url = new URL(request.url);
       const requestedPage = Math.min(10, Math.max(1, Number.parseInt(url.searchParams.get("page") || "1", 10) || 1));
       const offset = (requestedPage - 1) * 200;
-      const products = stored.slice(offset, offset + 200).map((item) => ({
+      const approved = stored.filter((item) => {
+        const type = categoryOf(item.name, item.type, item.tag);
+        return Boolean(type && APPROVED_TYPES.includes(type as typeof APPROVED_TYPES[number]) && Number.isFinite(item.priceAmount) && item.priceAmount > 0 && /^https?:\\/\\//i.test(item.image));
+      });
+      const products = approved.slice(offset, offset + 200).map((item) => ({
         id: stableId(`${item.supplier}:${item.supplierId}`),
         name: item.name,
-        type: item.type,
-        price: item.price,
+        type: categoryOf(item.name, item.type, item.tag)!,
+        price: new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(item.priceAmount),
         priceAmount: item.priceAmount,
         image: item.image,
         tag: item.tag,
@@ -155,11 +163,11 @@ export async function GET(request: Request) {
       }));
       return NextResponse.json({
         products, count: products.length, page: requestedPage, pageSize: 200,
-        hasMore: offset + products.length < stored.length,
-        source: "database", totalStored: stored.length,
+        hasMore: offset + products.length < approved.length,
+        source: "database", totalStored: approved.length,
         suppliers: {
-          cj: { configured: Boolean(process.env.CJ_API_KEY), imported: stored.filter((item) => item.supplier === "CJdropshipping").length },
-          brandsGateway: { configured: Boolean(process.env.BRANDSGATEWAY_CATALOG_URL && process.env.BRANDSGATEWAY_API_TOKEN && process.env.BRANDSGATEWAY_CURRENCY === "EUR"), imported: stored.filter((item) => item.supplier === "BrandsGateway").length }
+          cj: { configured: Boolean(process.env.CJ_API_KEY), imported: approved.filter((item) => item.supplier === "CJdropshipping").length },
+          brandsGateway: { configured: Boolean(process.env.BRANDSGATEWAY_CATALOG_URL && process.env.BRANDSGATEWAY_API_TOKEN && process.env.BRANDSGATEWAY_CURRENCY === "EUR"), imported: approved.filter((item) => item.supplier === "BrandsGateway").length }
         },
         errors: []
       }, { headers: { "Cache-Control": "no-store" } });
